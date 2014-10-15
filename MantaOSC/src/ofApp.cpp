@@ -38,73 +38,89 @@ void ofApp::setup(){
     aOscButton = "/manta/button";
     aOscButtonVelocity = "/manta/buttonVelocity";
     
+    dOscPad = "(row,col,value)";
+    dOscPadVelocity = "(row,col,value)";
+    dOscSlider = "(index,value)";
+    dOscButton = "(index,value)";
+    dOscButtonVelocity = "(index,value)";
+    
+    aRLed = "/manta/led/enable";
+    aRLedPad = "/manta/led/pad";
+    aRLedSlider = "/manta/led/slider";
+    aRLedButton = "/manta/led/button";
+    
+    dRLed = "(0/1)";
+    dRLedPad = "(row,col,0/1/2)";
+    dRLedSlider = "(index,value)";
+    dRLedButton = "(index,value)";
+    
     guiOptions = new ofxUICanvas("Manta Options");
     guiOptions->setFont("AndaleMono.ttf");
     guiOptions->clearWidgets();
     guiOptions->setPosition(5, 5);
-    guiOptions->setWidth(310);
+    guiOptions->setWidth(400);
     guiOptions->setHeight(24);
-    guiOptions->addSpacer(20,0);
+    guiOptions->addSpacer(5,0);
     guiOptions->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
-    guiOptions->addLabelToggle("animated", &animated, 100.0f);
-    guiOptions->addSpacer(20,0);
-    guiOptions->addLabelButton("osc info", false, 100.0f);
+    guiView = guiOptions->addLabelButton("osc info", false, 100.0f);
+    guiOptions->addSpacer(165,0);
+    guiAnimated = guiOptions->addLabelToggle("animated", &animated, 100.0f);
     
     gui = new ofxUICanvas("Manta OSC");
-    gui->setWidth(256);
-    gui->setHeight(290);
     gui->setFont("AndaleMono.ttf");
     gui->clearWidgets();
-    gui->setPosition(320, 5);
+    gui->setPosition(5, 36);
+    gui->setWidth(400);
+    gui->setHeight(310);
 
-    gui->addLabel("host out:");
+    gui->addLabel("host out: ");
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
     guiHostIn = gui->addTextInput("hostOut", host);
     guiHostIn->setAutoClear(false);
-    guiHostIn->getRect()->setWidth(150);
+    guiHostIn->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
     
-    gui->addLabel("port out:");
+    gui->addLabel("port out: ");
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
     guiPortOut = gui->addTextInput("portOut", ofToString(portOut));
     guiPortOut->setAutoClear(false);
-    guiPortOut->getRect()->setWidth(150);
+    guiPortOut->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
     
-    gui->addLabel("port in:");
+    gui->addLabel("port in:  ");
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
     guiPortIn = gui->addTextInput("portIn", ofToString(portIn));
     guiPortIn->setAutoClear(false);
-    guiPortIn->getRect()->setWidth(150);
+    guiPortIn->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
     
     gui->addSpacer();
     
     gui->addTextArea("noteOscOut", "OSC outputs");
-    
+
     gui->addToggle("bPad", &oscPad)->setLabelVisible(false);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
-    gui->addTextArea("tPad", aOscPad)->getRect()->setWidth(200);
+    gui->addTextArea("tPad", aOscPad+"            "+dOscPad)->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
     
     gui->addToggle("bPadVelocity", &oscPadVelocity)->setLabelVisible(false);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
-    gui->addTextArea("tPadVelocity", aOscPadVelocity)->getRect()->setWidth(200);
+    gui->addTextArea("tPadVelocity", aOscPadVelocity+"    "+dOscPadVelocity)->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
     
     gui->addToggle("bSlider", &oscSlider)->setLabelVisible(false);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
-    gui->addTextArea("tSlider", aOscSlider)->getRect()->setWidth(200);
+    gui->addTextArea("tSlider", aOscSlider+"         "+dOscSlider)->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
     
     gui->addToggle("bButton", &oscButton)->setLabelVisible(false);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
-    gui->addTextArea("tButton", aOscButton)->getRect()->setWidth(200);
+    gui->addTextArea("tButton", aOscButton+"         "+dOscButton)->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
 
     gui->addToggle("bButtonVelocity", &oscButtonVelocity)->setLabelVisible(false);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
-    gui->addTextArea("tButtonVelocity", aOscButtonVelocity)->getRect()->setWidth(200);
+    gui->addTextArea("tButtonVelocity", aOscButtonVelocity+" "+dOscButtonVelocity)->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
     gui->addSpacer();
 
@@ -112,23 +128,27 @@ void ofApp::setup(){
     
     gui->addToggle("bRLed", &rLed)->setLabelVisible(false);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
-    gui->addTextArea("tRLed", "/manta/led/enable")->getRect()->setWidth(200);
+    gui->addTextArea("tRLed", aRLed+"     "+dRLed)->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
     
     gui->addToggle("bRLedPad", &rLedPad)->setLabelVisible(false);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
-    gui->addTextArea("tRLedPad", "/manta/led/pad")->getRect()->setWidth(200);
+    gui->addTextArea("tRLedPad", aRLedPad+"        "+dRLedPad)->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
 
     gui->addToggle("bRLedSlider", &rLedSlider)->setLabelVisible(false);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
-    gui->addTextArea("tRLedSlider", "/manta/led/slider")->getRect()->setWidth(200);
+    gui->addTextArea("tRLedSlider", aRLedSlider+"     "+dRLedSlider)->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
 
     gui->addToggle("bRLedButton", &rLedButton)->setLabelVisible(false);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
-    gui->addTextArea("tRLedButton", "/manta/led/button")->getRect()->setWidth(200);
+    gui->addTextArea("tRLedButton", aRLedButton+"     "+dRLedButton)->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
+    
+    gui->addSpacer();
+    
+    gui->setVisible(false);
     
     setupOscSender(host, portOut, true);
     setupOscReceiver(portIn, true);
@@ -223,8 +243,10 @@ void ofApp::guiEvent(ofxUIEventArgs &e) {
 void ofApp::guiOptionsEvent(ofxUIEventArgs &e) {
     if      (e.getName() == "osc info") {
         if (e.getButton()->getValue() == 1) return;
-        string msg = "tbd";
-        ofSystemAlertDialog(msg);
+        view = 1-view;
+        guiView->setLabelText(view == 0 ? "osc info" : "manta view");
+        guiAnimated->setVisible(view == 0);
+        gui->setVisible(view == 1);
     }
     else if (e.getName() == "animated") {
         manta.setAnimated(animated);
@@ -233,11 +255,35 @@ void ofApp::guiOptionsEvent(ofxUIEventArgs &e) {
 
 //----------
 void ofApp::update(){
-    if (oscIn) {
-        while (receiver.hasWaitingMessages()){
+    while (receiver.hasWaitingMessages()){
+        try {
             ofxOscMessage msg;
             receiver.getNextMessage(&msg);
             string address = msg.getAddress();
+            
+            if (oscIn) {
+                if (address == aRLedPad) {
+                    int row = msg.getArgAsInt32(0);
+                    int col = msg.getArgAsInt32(1);
+                    int value = msg.getArgAsInt32(2);
+                }
+                else if (address == aRLedSlider) {
+                    int index = msg.getArgAsInt32(0);
+                    int value = msg.getArgAsInt32(1);
+                }
+                else if (address == aRLedButton) {
+                    int index = msg.getArgAsInt32(0);
+                    int value = msg.getArgAsInt32(1);
+                }
+            }
+            
+            if (address == aRLed) {
+                rLed = msg.getArgAsInt32(0) == 1;
+                oscIn = rLed;
+            }
+        }
+        catch (runtime_error &e) {
+            //
         }
     }
 }
@@ -245,30 +291,33 @@ void ofApp::update(){
 //----------
 void ofApp::draw(){
     ofBackground(100);
-    manta.draw(5, 36, 310);
+
+    if (view == 0) {
+        manta.draw(5, 36, 400);
+    }
 
     if (failedOscIn && failedOscOut) {
         ofPushStyle();
         ofSetColor(255, 0, 0);
-        ofRect(3, 279, 314, 19);
+        ofRect(0, 336, 410, 19);
         ofSetColor(255);
-        ofDrawBitmapString("OSC sender & receiver failed to connect. ", 5, 294);
+        ofDrawBitmapString("OSC sender & receiver failed to connect. ", 6, 350);
         ofPopStyle();
     }
     else if (failedOscIn) {
         ofPushStyle();
         ofSetColor(255, 0, 0);
-        ofRect(3, 279, 314, 19);
+        ofRect(0, 336, 410, 19);
         ofSetColor(255);
-        ofDrawBitmapString("OSC receiver failed to connect. ", 5, 294);
+        ofDrawBitmapString("OSC receiver failed to connect. ", 6, 350);
         ofPopStyle();
     }
     else if (failedOscOut) {
         ofPushStyle();
         ofSetColor(255, 0, 0);
-        ofRect(3, 279, 314, 19);
+        ofRect(0, 336, 410, 19);
         ofSetColor(255);
-        ofDrawBitmapString("OSC sender failed to connect. ", 5, 294);
+        ofDrawBitmapString("OSC sender failed to connect. ", 6, 350);
         ofPopStyle();
     }
 }

@@ -28,16 +28,23 @@ private:
     void setupOscSender(string _host, int _portOut, bool force=false);
     void setupOscReceiver(int _portIn, bool force=false);
     
+    int view;
+    
     ofxManta manta;
 
     ofxUICanvas *gui, *guiOptions;
     ofxUITextInput *guiHostIn, *guiPortIn, *guiPortOut;
+    ofxUILabelButton *guiView;
+    ofxUILabelToggle *guiAnimated;
     
     string host;
     int portIn, portOut;
     
     string aOscPad, aOscPadVelocity, aOscSlider, aOscButton, aOscButtonVelocity;
-    
+    string dOscPad, dOscPadVelocity, dOscSlider, dOscButton, dOscButtonVelocity;
+    string aRLed, aRLedPad, aRLedSlider, aRLedButton;
+    string dRLed, dRLedPad, dRLedSlider, dRLedButton;
+
     bool oscIn, oscOut;
     bool oscPad, oscPadVelocity, oscSlider, oscButton, oscButtonVelocity;
     bool rLed, rLedPad, rLedSlider, rLedButton;

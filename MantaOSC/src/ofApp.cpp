@@ -2,6 +2,8 @@
 
 //----------
 void ofApp::setup(){
+    //ofSetDataPathRoot("../Resources/data/");
+    
     ofSetEscapeQuitsApp(false);
     
     ofSetWindowTitle("Manta OSC");
@@ -204,39 +206,16 @@ void ofApp::guiEvent(ofxUIEventArgs &e) {
         setupOscReceiver(ofToInt(guiPortIn->getTextString()));
     }
     else if (e.getName() == "bRLed") {
-        if (rLed) {
-            
-        }
-        else {
-            
-        }
+        oscIn = rLed;
     }
+    /*
     else if (e.getName() == "bRLedPad") {
-        if (rLedPad) {
-            
-        }
-        else {
-            
-        }
-        
     }
     else if (e.getName() == "bRLedSlider") {
-        if (rLedSlider) {
-            
-        }
-        else {
-            
-        }
-        
     }
     else if (e.getName() == "bRLedButton") {
-        if (rLedButton) {
-            
-        }
-        else {
-            
-        }
     }
+    */
 }
 
 //----------
@@ -262,28 +241,48 @@ void ofApp::update(){
             string address = msg.getAddress();
             
             if (oscIn) {
-                if (address == aRLedPad) {
-                    int row = msg.getArgAsInt32(0);
-                    int col = msg.getArgAsInt32(1);
-                    int value = msg.getArgAsInt32(2);
+                if      (address == aRLedPad) {
+                    if (rLedPad) {
+                        int row = msg.getArgAsInt32(0);
+                        int col = msg.getArgAsInt32(1);
+                        int value = msg.getArgAsInt32(2);
+                        if      (value == 0)
+                            manta.setPadLedState(row, col, Manta::Off);
+                        else if (value == 1)
+                            manta.setPadLedState(row, col, Manta::Amber);
+                        else if (value == 1)
+                            manta.setPadLedState(row, col, Manta::Red);
+                    }
                 }
                 else if (address == aRLedSlider) {
-                    int index = msg.getArgAsInt32(0);
-                    int value = msg.getArgAsInt32(1);
+                    if (rLedSlider) {
+                        int index = msg.getArgAsInt32(0);
+                        int value = msg.getArgAsInt32(1);
+                        manta.setSliderLedState(index, Manta::Amber, value);
+                    }
                 }
                 else if (address == aRLedButton) {
-                    int index = msg.getArgAsInt32(0);
-                    int value = msg.getArgAsInt32(1);
+                    if (rLedButton) {
+                        int index = msg.getArgAsInt32(0);
+                        int value = msg.getArgAsInt32(1);
+                        if      (value == 0)
+                            manta.setButtonLedState(index, Manta::Off);
+                        else if (value == 1)
+                            manta.setButtonLedState(index, Manta::Amber);
+                        else if (value == 2)
+                            manta.setButtonLedState(index, Manta::Red);
+                    }
                 }
             }
             
             if (address == aRLed) {
                 rLed = msg.getArgAsInt32(0) == 1;
                 oscIn = rLed;
+                manta.setLedManual(rLed);
             }
         }
         catch (runtime_error &e) {
-            //
+            ofLog(OF_LOG_ERROR, e.what());
         }
     }
 }

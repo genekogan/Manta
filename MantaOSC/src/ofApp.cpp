@@ -2,7 +2,7 @@
 
 //----------
 void ofApp::setup(){
-    ofSetDataPathRoot("../Resources/data/");
+    //ofSetDataPathRoot("../Resources/data/");
     
     ofSetEscapeQuitsApp(false);
     

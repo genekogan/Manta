@@ -57,9 +57,17 @@
 		B05C3EB419ECDC7200658007 /* Learn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B05C3E9619ECDC4E00658007 /* Learn.cpp */; };
 		B05C3EB519ECDC7200658007 /* LearnParameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B05C3E9819ECDC4E00658007 /* LearnParameter.cpp */; };
 		B05C3EBA19ECDC7200658007 /* MantaLearn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B05C3EA619ECDC4E00658007 /* MantaLearn.cpp */; };
-		B05C3EBB19ECDC7200658007 /* Control.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B05C3EAC19ECDC5E00658007 /* Control.cpp */; };
-		B05C3EBC19ECDC7200658007 /* OscManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B05C3EAE19ECDC5E00658007 /* OscManager.cpp */; };
-		B05C3EBD19ECDC7200658007 /* Presets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B05C3EB119ECDC5E00658007 /* Presets.cpp */; };
+		B08625CA1A2C3C6300FEF5CC /* ControlPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B08625BF1A2C3C6300FEF5CC /* ControlPanel.cpp */; };
+		B08625CB1A2C3C6300FEF5CC /* MetaController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B08625C11A2C3C6300FEF5CC /* MetaController.cpp */; };
+		B08625CC1A2C3C6300FEF5CC /* OscManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B08625C31A2C3C6300FEF5CC /* OscManager.cpp */; };
+		B08625CD1A2C3C6300FEF5CC /* Presets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B08625C61A2C3C6300FEF5CC /* Presets.cpp */; };
+		B08625CE1A2C3C6300FEF5CC /* Sequencer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B08625C81A2C3C6300FEF5CC /* Sequencer.cpp */; };
+		B08625D31A2C3C6600FEF5CC /* ofxBpm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B08625D11A2C3C6600FEF5CC /* ofxBpm.cpp */; };
+		B08625D81A2C3C6A00FEF5CC /* ofxSequencer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B08625D61A2C3C6A00FEF5CC /* ofxSequencer.cpp */; };
+		B08625E31A2C3C7000FEF5CC /* ofxGMM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B08625DB1A2C3C7000FEF5CC /* ofxGMM.cpp */; };
+		B08625E41A2C3C7000FEF5CC /* GMM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B08625DF1A2C3C7000FEF5CC /* GMM.cpp */; };
+		B08625E51A2C3C7000FEF5CC /* KMeans.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B08625E11A2C3C7000FEF5CC /* KMeans.cpp */; };
+		B08625E81A2C3C7F00FEF5CC /* Analyze.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B08625E71A2C3C7F00FEF5CC /* Analyze.cpp */; };
 		B0BA13E319CDDC6400D64AAB /* ofxLearn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0BA0FF319CDDC6200D64AAB /* ofxLearn.cpp */; };
 		B0FC0B9719E8A65500D3A177 /* ofxManta.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0FC0B8719E8A65500D3A177 /* ofxManta.cpp */; };
 		B0FC0B9819E8A65500D3A177 /* hid.c in Sources */ = {isa = PBXBuildFile; fileRef = B0FC0B8B19E8A65500D3A177 /* hid.c */; };
@@ -243,13 +251,30 @@
 		B05C3EA719ECDC4E00658007 /* MantaLearn.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MantaLearn.h; sourceTree = "<group>"; };
 		B05C3EA919ECDC5700658007 /* MantaController.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MantaController.cpp; sourceTree = "<group>"; };
 		B05C3EAA19ECDC5700658007 /* MantaController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MantaController.h; sourceTree = "<group>"; };
-		B05C3EAC19ECDC5E00658007 /* Control.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Control.cpp; sourceTree = "<group>"; };
-		B05C3EAD19ECDC5E00658007 /* Control.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Control.h; sourceTree = "<group>"; };
-		B05C3EAE19ECDC5E00658007 /* OscManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OscManager.cpp; sourceTree = "<group>"; };
-		B05C3EAF19ECDC5E00658007 /* OscManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OscManager.h; sourceTree = "<group>"; };
-		B05C3EB019ECDC5E00658007 /* Parameter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parameter.h; sourceTree = "<group>"; };
-		B05C3EB119ECDC5E00658007 /* Presets.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Presets.cpp; sourceTree = "<group>"; };
-		B05C3EB219ECDC5E00658007 /* Presets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Presets.h; sourceTree = "<group>"; };
+		B08625BE1A2C3C6300FEF5CC /* Control.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Control.h; sourceTree = "<group>"; };
+		B08625BF1A2C3C6300FEF5CC /* ControlPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ControlPanel.cpp; sourceTree = "<group>"; };
+		B08625C01A2C3C6300FEF5CC /* ControlPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ControlPanel.h; sourceTree = "<group>"; };
+		B08625C11A2C3C6300FEF5CC /* MetaController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MetaController.cpp; sourceTree = "<group>"; };
+		B08625C21A2C3C6300FEF5CC /* MetaController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetaController.h; sourceTree = "<group>"; };
+		B08625C31A2C3C6300FEF5CC /* OscManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OscManager.cpp; sourceTree = "<group>"; };
+		B08625C41A2C3C6300FEF5CC /* OscManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OscManager.h; sourceTree = "<group>"; };
+		B08625C51A2C3C6300FEF5CC /* Parameter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parameter.h; sourceTree = "<group>"; };
+		B08625C61A2C3C6300FEF5CC /* Presets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Presets.cpp; sourceTree = "<group>"; };
+		B08625C71A2C3C6300FEF5CC /* Presets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Presets.h; sourceTree = "<group>"; };
+		B08625C81A2C3C6300FEF5CC /* Sequencer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sequencer.cpp; sourceTree = "<group>"; };
+		B08625C91A2C3C6300FEF5CC /* Sequencer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sequencer.h; sourceTree = "<group>"; };
+		B08625D11A2C3C6600FEF5CC /* ofxBpm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxBpm.cpp; sourceTree = "<group>"; };
+		B08625D21A2C3C6600FEF5CC /* ofxBpm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxBpm.h; sourceTree = "<group>"; };
+		B08625D61A2C3C6A00FEF5CC /* ofxSequencer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxSequencer.cpp; sourceTree = "<group>"; };
+		B08625D71A2C3C6A00FEF5CC /* ofxSequencer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxSequencer.h; sourceTree = "<group>"; };
+		B08625DB1A2C3C7000FEF5CC /* ofxGMM.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxGMM.cpp; sourceTree = "<group>"; };
+		B08625DC1A2C3C7000FEF5CC /* ofxGMM.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxGMM.h; sourceTree = "<group>"; };
+		B08625DF1A2C3C7000FEF5CC /* GMM.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GMM.cpp; sourceTree = "<group>"; };
+		B08625E01A2C3C7000FEF5CC /* GMM.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GMM.h; sourceTree = "<group>"; };
+		B08625E11A2C3C7000FEF5CC /* KMeans.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = KMeans.cpp; sourceTree = "<group>"; };
+		B08625E21A2C3C7000FEF5CC /* KMeans.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KMeans.h; sourceTree = "<group>"; };
+		B08625E61A2C3C7F00FEF5CC /* Analyze.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Analyze.h; sourceTree = "<group>"; };
+		B08625E71A2C3C7F00FEF5CC /* Analyze.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Analyze.cpp; sourceTree = "<group>"; };
 		B0BA0FF319CDDC6200D64AAB /* ofxLearn.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxLearn.cpp; sourceTree = "<group>"; };
 		B0BA0FF419CDDC6200D64AAB /* ofxLearn.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxLearn.h; sourceTree = "<group>"; };
 		B0FC0B8719E8A65500D3A177 /* ofxManta.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxManta.cpp; sourceTree = "<group>"; };
@@ -486,6 +511,8 @@
 				B05C3E9719ECDC4E00658007 /* Learn.h */,
 				B05C3E9819ECDC4E00658007 /* LearnParameter.cpp */,
 				B05C3E9919ECDC4E00658007 /* LearnParameter.h */,
+				B08625E61A2C3C7F00FEF5CC /* Analyze.h */,
+				B08625E71A2C3C7F00FEF5CC /* Analyze.cpp */,
 				B05C3EA519ECDC4E00658007 /* ModuleManta */,
 			);
 			name = src;
@@ -514,16 +541,96 @@
 		B05C3EAB19ECDC5E00658007 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				B05C3EAC19ECDC5E00658007 /* Control.cpp */,
-				B05C3EAD19ECDC5E00658007 /* Control.h */,
-				B05C3EAE19ECDC5E00658007 /* OscManager.cpp */,
-				B05C3EAF19ECDC5E00658007 /* OscManager.h */,
-				B05C3EB019ECDC5E00658007 /* Parameter.h */,
-				B05C3EB119ECDC5E00658007 /* Presets.cpp */,
-				B05C3EB219ECDC5E00658007 /* Presets.h */,
+				B08625BE1A2C3C6300FEF5CC /* Control.h */,
+				B08625BF1A2C3C6300FEF5CC /* ControlPanel.cpp */,
+				B08625C01A2C3C6300FEF5CC /* ControlPanel.h */,
+				B08625C11A2C3C6300FEF5CC /* MetaController.cpp */,
+				B08625C21A2C3C6300FEF5CC /* MetaController.h */,
+				B08625C31A2C3C6300FEF5CC /* OscManager.cpp */,
+				B08625C41A2C3C6300FEF5CC /* OscManager.h */,
+				B08625C51A2C3C6300FEF5CC /* Parameter.h */,
+				B08625C61A2C3C6300FEF5CC /* Presets.cpp */,
+				B08625C71A2C3C6300FEF5CC /* Presets.h */,
+				B08625C81A2C3C6300FEF5CC /* Sequencer.cpp */,
+				B08625C91A2C3C6300FEF5CC /* Sequencer.h */,
 			);
 			name = src;
 			path = ../../../tools/Control/src;
+			sourceTree = "<group>";
+		};
+		B08625CF1A2C3C6600FEF5CC /* ofxBpm */ = {
+			isa = PBXGroup;
+			children = (
+				B08625D01A2C3C6600FEF5CC /* src */,
+			);
+			name = ofxBpm;
+			sourceTree = "<group>";
+		};
+		B08625D01A2C3C6600FEF5CC /* src */ = {
+			isa = PBXGroup;
+			children = (
+				B08625D11A2C3C6600FEF5CC /* ofxBpm.cpp */,
+				B08625D21A2C3C6600FEF5CC /* ofxBpm.h */,
+			);
+			name = src;
+			path = ../../../addons/ofxBpm/src;
+			sourceTree = "<group>";
+		};
+		B08625D41A2C3C6A00FEF5CC /* ofxSequencer */ = {
+			isa = PBXGroup;
+			children = (
+				B08625D51A2C3C6A00FEF5CC /* src */,
+			);
+			name = ofxSequencer;
+			sourceTree = "<group>";
+		};
+		B08625D51A2C3C6A00FEF5CC /* src */ = {
+			isa = PBXGroup;
+			children = (
+				B08625D61A2C3C6A00FEF5CC /* ofxSequencer.cpp */,
+				B08625D71A2C3C6A00FEF5CC /* ofxSequencer.h */,
+			);
+			name = src;
+			path = ../../../addons/ofxSequencer/src;
+			sourceTree = "<group>";
+		};
+		B08625D91A2C3C7000FEF5CC /* ofxGMM */ = {
+			isa = PBXGroup;
+			children = (
+				B08625DA1A2C3C7000FEF5CC /* src */,
+				B08625DD1A2C3C7000FEF5CC /* libs */,
+			);
+			name = ofxGMM;
+			sourceTree = "<group>";
+		};
+		B08625DA1A2C3C7000FEF5CC /* src */ = {
+			isa = PBXGroup;
+			children = (
+				B08625DB1A2C3C7000FEF5CC /* ofxGMM.cpp */,
+				B08625DC1A2C3C7000FEF5CC /* ofxGMM.h */,
+			);
+			name = src;
+			path = ../../../addons/ofxGMM/src;
+			sourceTree = "<group>";
+		};
+		B08625DD1A2C3C7000FEF5CC /* libs */ = {
+			isa = PBXGroup;
+			children = (
+				B08625DE1A2C3C7000FEF5CC /* GMM */,
+			);
+			name = libs;
+			path = ../../../addons/ofxGMM/libs;
+			sourceTree = "<group>";
+		};
+		B08625DE1A2C3C7000FEF5CC /* GMM */ = {
+			isa = PBXGroup;
+			children = (
+				B08625DF1A2C3C7000FEF5CC /* GMM.cpp */,
+				B08625E01A2C3C7000FEF5CC /* GMM.h */,
+				B08625E11A2C3C7000FEF5CC /* KMeans.cpp */,
+				B08625E21A2C3C7000FEF5CC /* KMeans.h */,
+			);
+			path = GMM;
 			sourceTree = "<group>";
 		};
 		B0BA0FF119CDDC6200D64AAB /* ofxLearn */ = {
@@ -624,6 +731,9 @@
 				B05C3E9419ECDC4400658007 /* Manta */,
 				B05C3E9319ECDC3F00658007 /* Learn */,
 				B05C3E9219ECDC3B00658007 /* Control */,
+				B08625D91A2C3C7000FEF5CC /* ofxGMM */,
+				B08625D41A2C3C6A00FEF5CC /* ofxSequencer */,
+				B08625CF1A2C3C6600FEF5CC /* ofxBpm */,
 				B0FC0BBC19E8E4BF00D3A177 /* ofxConvexHull */,
 				B0FC0B8519E8A65500D3A177 /* ofxManta */,
 				B0BA0FF119CDDC6200D64AAB /* ofxLearn */,
@@ -985,16 +1095,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				B05C3EB319ECDC7200658007 /* MantaController.cpp in Sources */,
+				B08625E41A2C3C7000FEF5CC /* GMM.cpp in Sources */,
 				B05C3EB419ECDC7200658007 /* Learn.cpp in Sources */,
 				B05C3EB519ECDC7200658007 /* LearnParameter.cpp in Sources */,
 				B05C3EBA19ECDC7200658007 /* MantaLearn.cpp in Sources */,
-				B05C3EBB19ECDC7200658007 /* Control.cpp in Sources */,
-				B05C3EBC19ECDC7200658007 /* OscManager.cpp in Sources */,
-				B05C3EBD19ECDC7200658007 /* Presets.cpp in Sources */,
 				E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */,
 				E4B69E210A3A1BDC003C02F2 /* ofApp.cpp in Sources */,
 				72A929D3561B8232A182ABFC /* ofxOscBundle.cpp in Sources */,
 				5864AD82E20F15536D054EA3 /* ofxOscMessage.cpp in Sources */,
+				B08625CD1A2C3C6300FEF5CC /* Presets.cpp in Sources */,
+				B08625CB1A2C3C6300FEF5CC /* MetaController.cpp in Sources */,
+				B08625CC1A2C3C6300FEF5CC /* OscManager.cpp in Sources */,
 				4ADB88E2FB52E76A471065DE /* ofxOscParameterSync.cpp in Sources */,
 				640279EE111671BD026CB013 /* ofxOscReceiver.cpp in Sources */,
 				8F5205AEF8861EF234F0651A /* ofxOscSender.cpp in Sources */,
@@ -1029,6 +1140,7 @@
 				7252706DA14C1BE63950ADDA /* ofxUIFPS.cpp in Sources */,
 				B0FC0BC019E8E4BF00D3A177 /* ofxConvexHull.cpp in Sources */,
 				B0FC0B9A19E8A65500D3A177 /* MantaMulti.cpp in Sources */,
+				B08625D81A2C3C6A00FEF5CC /* ofxSequencer.cpp in Sources */,
 				22030CBDCC25D815E7ED6757 /* ofxUIFPSSlider.cpp in Sources */,
 				3D4EA8E172D3E4A30FEFA969 /* ofxUIImage.cpp in Sources */,
 				7F2CD93F681F3C1547B3BF2C /* ofxUIImageButton.cpp in Sources */,
@@ -1049,10 +1161,13 @@
 				1587708E3CAC72997E43504E /* ofxUIRangeSlider.cpp in Sources */,
 				59C5F2F5D7254C33C00F97CB /* ofxUIRectangle.cpp in Sources */,
 				FE0F1DB69ACCD163E9DA2A15 /* ofxUIRotarySlider.cpp in Sources */,
+				B08625CE1A2C3C6300FEF5CC /* Sequencer.cpp in Sources */,
 				43BADBB2FE0F17D34B57A705 /* ofxUIScrollableCanvas.cpp in Sources */,
 				740A58CBFDFE578C83A349AF /* ofxUISlider.cpp in Sources */,
+				B08625E31A2C3C7000FEF5CC /* ofxGMM.cpp in Sources */,
 				ADE7C2AFC51E3F7E5E389026 /* ofxUISortableList.cpp in Sources */,
 				BFEFCE32DAFE10A8EB519F6C /* ofxUISpacer.cpp in Sources */,
+				B08625CA1A2C3C6300FEF5CC /* ControlPanel.cpp in Sources */,
 				52AFF80A869790144ACCC9BA /* ofxUISpectrum.cpp in Sources */,
 				1DAAC3FB4B98B08AE63F4687 /* ofxUISuperCanvas.cpp in Sources */,
 				5AE95ADB5549701423B6DA48 /* ofxUITabBar.cpp in Sources */,
@@ -1060,9 +1175,12 @@
 				B0FC0B9819E8A65500D3A177 /* hid.c in Sources */,
 				F8D05F7C7F785CE323983B47 /* ofxUITextInput.cpp in Sources */,
 				04C82720B149CE576B8CBB06 /* ofxUIToggle.cpp in Sources */,
+				B08625E51A2C3C7000FEF5CC /* KMeans.cpp in Sources */,
+				B08625D31A2C3C6600FEF5CC /* ofxBpm.cpp in Sources */,
 				E3A1109F67D711D6C256031E /* ofxUIToggleMatrix.cpp in Sources */,
 				60012C723B05938A3D388335 /* ofxUIValuePlotter.cpp in Sources */,
 				B0BA13E319CDDC6400D64AAB /* ofxLearn.cpp in Sources */,
+				B08625E81A2C3C7F00FEF5CC /* Analyze.cpp in Sources */,
 				AE281BEBF3A00F1FC37F3DA0 /* ofxUIWaveform.cpp in Sources */,
 				82845E1F8C90E1F5A99D9868 /* ofxUIWidget.cpp in Sources */,
 				CE5D89B9893EAA12F511DCAC /* ofxUIWidgetWithLabel.cpp in Sources */,

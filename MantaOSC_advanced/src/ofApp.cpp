@@ -16,9 +16,36 @@ void ofApp::setup(){
     manta.addPadVelocityListener(this, &ofApp::PadVelocityEvent);
     manta.addButtonVelocityListener(this, &ofApp::ButtonVelocityEvent);
     
+    numPads.addListener(this, &ofApp::changedNumPads);
+    padSum.addListener(this, &ofApp::changedPadSum);
+    padAverage.addListener(this, &ofApp::changedPadAverage);
+    centroidX.addListener(this, &ofApp::changedCentroidX);
+    centroidY.addListener(this, &ofApp::changedCentroidY);
+    weightedCentroidX.addListener(this, &ofApp::changedWeightedCentroidX);
+    weightedCentroidY.addListener(this, &ofApp::changedWeightedCentroidY);
+    averageInterFingerDistance.addListener(this, &ofApp::changedAverageInterFingerDistance);
+    perimeter.addListener(this, &ofApp::changedPerimeter);
+    area.addListener(this, &ofApp::changedArea);
+    padWidth.addListener(this, &ofApp::changedPadWidth);
+    padHeight.addListener(this, &ofApp::changedPadHeight);
+    whRatio.addListener(this, &ofApp::changedWhRatio);
+    numPadsVelocity.addListener(this, &ofApp::changedNumPadsVelocity);
+    padSumVelocity.addListener(this, &ofApp::changedPadSumVelocity);
+    padAverageVelocity.addListener(this, &ofApp::changedPadAverageVelocity);
+    centroidVelocityX.addListener(this, &ofApp::changedCentroidVelocityX);
+    centroidVelocityY.addListener(this, &ofApp::changedCentroidVelocityY);
+    weightedCentroidVelocityX.addListener(this, &ofApp::changedWeightedCentroidVelocityX);
+    weightedCentroidVelocityY.addListener(this, &ofApp::changedWeightedCentroidVelocityY);
+    averageInterFingerDistanceVelocity.addListener(this, &ofApp::changedAverageInterFingerDistanceVelocity);
+    perimeterVelocity.addListener(this, &ofApp::changedPerimeterVelocity);
+    areaVelocity.addListener(this, &ofApp::changedAreaVelocity);
+    widthVelocity.addListener(this, &ofApp::changedWidthVelocity);
+    heightVelocity.addListener(this, &ofApp::changedHeightVelocity);
+    whRatioVelocity.addListener(this, &ofApp::changedWhRatioVelocity);
+    
     host = "localhost";
-    portIn = 2758;
-    portOut = 2759;
+    portIn = 27518;
+    portOut = 27519;
     
     oscPad = true;
     oscPadVelocity = true;
@@ -34,6 +61,8 @@ void ofApp::setup(){
     failedOscIn = false;
     failedOscOut = true;
     
+    velocitySmoothness = 1.0 - manta.getVelocityLerpRate();
+    
     loadSettings();
     
     aOscPad = "/manta/pad";
@@ -47,6 +76,20 @@ void ofApp::setup(){
     dOscSlider = "(index,value)";
     dOscButton = "(index,value)";
     dOscButtonVelocity = "(index,value)";
+    
+    aOscNumPads = "/manta/numPads";
+    aOscPadSum = "/manta/padSum";
+    aOscPadAverage = "/manta/padAvg";
+    aOscCentroidX = "/manta/centroidX";
+    aOscCentroidY = "/manta/centroidY";
+    aOscWeightedCentroidX = "/manta/wCentroidX";
+    aOscWeightedCentroidY = "/manta/wCentroidY";
+    aOscAverageInterFingerDistance = "/manta/avgFingerDist";
+    aOscPerimeter = "/manta/perimeter";
+    aOscArea = "/manta/area";
+    aOscPadWidth = "/manta/padWidth";
+    aOscPadHeight = "/manta/padHeight";
+    aOscWhRatio = "/manta/padWhRatio";
     
     aRLed = "/manta/led/enable";
     aRLedPad = "/manta/led/pad";
@@ -126,8 +169,29 @@ void ofApp::setup(){
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
     gui->addTextArea("tButtonVelocity", aOscButtonVelocity+" "+dOscButtonVelocity)->getRect()->setWidth(200);
     gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
-    gui->addSpacer();
 
+    gui->addSpacer();
+    
+    gui->addTextArea("statsOscOut", "Manta Stats {Value, Velocity***}");
+    
+    addMantaStatToGui("NumPads", aOscNumPads, &oscNumPads, &oscNumPadsV);
+    addMantaStatToGui("PadSum", aOscPadSum, &oscPadSum, &oscPadSumV);
+    addMantaStatToGui("PadAvg", aOscPadAverage, &oscPadAverage, &oscPadAverageV);
+    addMantaStatToGui("CentroidX", aOscCentroidX, &oscCentroidX, &oscCentroidXV);
+    addMantaStatToGui("CentroidY", aOscCentroidY, &oscCentroidY, &oscCentroidYV);
+    addMantaStatToGui("wCentroidX", aOscWeightedCentroidX, &oscWeightedCentroidX, &oscWeightedCentroidXV);
+    addMantaStatToGui("wCentroidY", aOscWeightedCentroidY, &oscWeightedCentroidY, &oscWeightedCentroidYV);
+    addMantaStatToGui("AvgFingerDist", aOscAverageInterFingerDistance, &oscAverageInterFingerDistance, &oscAverageInterFingerDistanceV);
+    addMantaStatToGui("Perimeter", aOscPerimeter, &oscPerimeter, &oscPerimeterV);
+    addMantaStatToGui("Area", aOscArea, &oscArea, &oscAreaV);
+    addMantaStatToGui("PadWidth", aOscPadWidth, &oscPadWidth, &oscPadWidthV);
+    addMantaStatToGui("PadHeight", aOscPadHeight, &oscPadHeight, &oscPadHeightV);
+    addMantaStatToGui("WidthHeightRatio", aOscWhRatio, &oscWhRatio, &oscWhRatioV);
+
+    gui->addSlider("Velocity smoothness", 0, 1, &velocitySmoothness);
+    
+    gui->addSpacer();
+    
     gui->addTextArea("noteOscIn", "LED control");
     
     gui->addToggle("bRLed", &rLed)->setLabelVisible(false);
@@ -152,6 +216,9 @@ void ofApp::setup(){
     
     gui->addSpacer();
     
+    gui->addTextArea("note", "*** append \"Velocity\" to OSC address");
+    
+    gui->autoSizeToFitWidgets();
     gui->setVisible(false);
     
     setupOscSender(host, portOut, true);
@@ -159,6 +226,15 @@ void ofApp::setup(){
 
     ofAddListener(gui->newGUIEvent, this, &ofApp::guiEvent);
     ofAddListener(guiOptions->newGUIEvent, this, &ofApp::guiOptionsEvent);
+}
+
+//----------
+void ofApp::addMantaStatToGui(string name, string address, bool *val, bool *vel) {
+    gui->addToggle("b"+name, val)->setLabelVisible(false);
+    gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
+    gui->addToggle("b"+name+"V", vel)->setLabelVisible(false);
+    gui->addTextArea("t"+name, address);
+    gui->setWidgetPosition(OFX_UI_WIDGET_POSITION_DOWN);
 }
 
 //----------
@@ -198,7 +274,10 @@ void ofApp::setupOscReceiver(int _portIn, bool force) {
 
 //----------
 void ofApp::guiEvent(ofxUIEventArgs &e) {
-    if      (e.getName() == "hostOut") {
+    if      (e.getName() == "Velocity smoothness") {
+        manta.setVelocityLerpRate(1.0-velocitySmoothness);
+    }
+    else if (e.getName() == "hostOut") {
         setupOscSender(guiHostIn->getTextString(), ofToInt(guiPortOut->getTextString()));
     }
     else if (e.getName() == "portOut") {
@@ -236,7 +315,37 @@ void ofApp::guiOptionsEvent(ofxUIEventArgs &e) {
 
 //----------
 void ofApp::update(){
-    while (receiver.hasWaitingMessages()){
+    
+    if (oscNumPads && numPads != manta.getNumPads()) numPads.set(manta.getNumPads());
+    if (oscPadSum && padSum != manta.getPadSum()) padSum.set(manta.getPadSum());
+    if (oscPadAverage && padAverage != manta.getPadAverage()) padAverage.set(manta.getPadAverage());
+    if (oscCentroidX && centroidX != manta.getCentroidX()) centroidX.set(manta.getCentroidX());
+    if (oscCentroidY && centroidY != manta.getCentroidY()) centroidY.set(manta.getCentroidY());
+    if (oscWeightedCentroidX && weightedCentroidX != manta.getWeightedCentroidX()) weightedCentroidX.set(manta.getWeightedCentroidX());
+    if (oscWeightedCentroidY && weightedCentroidY != manta.getWeightedCentroidY()) weightedCentroidY.set(manta.getWeightedCentroidY());
+    if (oscAverageInterFingerDistance && averageInterFingerDistance != manta.getAverageInterFingerDistance()) averageInterFingerDistance.set(manta.getAverageInterFingerDistance());
+    if (oscPerimeter && perimeter != manta.getPerimeter()) perimeter.set(manta.getPerimeter());
+    if (oscArea && area != manta.getArea()) area.set(manta.getArea());
+    if (oscPadWidth && padWidth != manta.getWidth()) padWidth.set(manta.getWidth());
+    if (oscPadHeight && padHeight != manta.getHeight()) padHeight.set(manta.getHeight());
+    if (oscWhRatio && whRatio != manta.getWidthHeightRatio()) whRatio.set(manta.getWidthHeightRatio());
+
+    if (oscNumPadsV && numPadsVelocity != manta.getNumPadsVelocity())  numPadsVelocity.set(manta.getNumPadsVelocity());
+    if (oscPadSumV && padSumVelocity != manta.getPadSumVelocity()) padSumVelocity.set(manta.getPadSumVelocity());
+    if (oscPadAverageV && padAverageVelocity != manta.getPadAverageVelocity()) padAverageVelocity.set(manta.getPadAverageVelocity());
+    if (oscCentroidXV && centroidVelocityX != manta.getCentroidVelocityX()) centroidVelocityX.set(manta.getCentroidVelocityX());
+    if (oscCentroidYV && centroidVelocityY != manta.getCentroidVelocityY()) centroidVelocityY.set(manta.getCentroidVelocityY());
+    if (oscWeightedCentroidXV && weightedCentroidVelocityX != manta.getWeightedCentroidVelocityX()) weightedCentroidVelocityX.set(manta.getWeightedCentroidVelocityX());
+    if (oscWeightedCentroidYV && weightedCentroidVelocityY != manta.getWeightedCentroidVelocityY()) weightedCentroidVelocityY.set(manta.getWeightedCentroidVelocityY());
+    if (oscAverageInterFingerDistanceV && averageInterFingerDistanceVelocity != manta.getAverageInterFingerDistanceVelocity()) averageInterFingerDistanceVelocity.set(manta.getAverageInterFingerDistanceVelocity());
+    if (oscPerimeterV && perimeterVelocity != manta.getPerimeterVelocity()) perimeterVelocity.set(manta.getPerimeterVelocity());
+    if (oscAreaV && areaVelocity != manta.getAreaVelocity()) areaVelocity.set(manta.getAreaVelocity());
+    if (oscPadWidthV && widthVelocity != manta.getWidthVelocity()) widthVelocity.set(manta.getWidthVelocity());
+    if (oscPadHeightV && heightVelocity != manta.getHeightVelocity()) heightVelocity.set(manta.getHeightVelocity());
+    if (oscWhRatioV && whRatioVelocity != manta.getWidthHeightRatioVelocity()) whRatioVelocity.set(manta.getWidthHeightRatioVelocity());
+    
+    while (receiver.hasWaitingMessages())
+    {
         try {
             ofxOscMessage msg;
             receiver.getNextMessage(&msg);
@@ -295,6 +404,7 @@ void ofApp::draw(){
 
     if (view == 0) {
         manta.draw(5, 36, ofGetWidth() - 10);
+        manta.drawStats(5, 350, ofGetWidth() - 10);
     }
 
     if (failedOscIn && failedOscOut) {
@@ -343,18 +453,52 @@ void ofApp::saveSettings() {
     ofXml xml;
     xml.addChild("Manta");
     xml.setTo("Manta");
+    
     xml.addValue("host", host);
     xml.addValue("portIn", portIn);
     xml.addValue("portOut", portOut);
+    
     xml.addValue("oscPad", oscPad);
     xml.addValue("oscPadVelocity", oscPadVelocity);
     xml.addValue("oscSlider", oscSlider);
     xml.addValue("oscButton", oscButton);
     xml.addValue("oscButtonVelocity", oscButtonVelocity);
+    
+    xml.addValue("oscNumPads", oscNumPads);
+    xml.addValue("oscPadSum", oscPadSum);
+    xml.addValue("oscPadAverage", oscPadAverage);
+    xml.addValue("oscCentroidX", oscCentroidX);
+    xml.addValue("oscCentroidY", oscCentroidY);
+    xml.addValue("oscWeightedCentroidX", oscWeightedCentroidX);
+    xml.addValue("oscWeightedCentroidY", oscWeightedCentroidY);
+    xml.addValue("oscAverageInterFingerDistance", oscAverageInterFingerDistance);
+    xml.addValue("oscPerimeter", oscPerimeter);
+    xml.addValue("oscArea", oscArea);
+    xml.addValue("oscPadWidth", oscPadWidth);
+    xml.addValue("oscPadHeight", oscPadHeight);
+    xml.addValue("oscWhRatio", oscWhRatio);
+    
+    xml.addValue("oscNumPadsV", oscNumPadsV);
+    xml.addValue("oscPadSumV", oscPadSumV);
+    xml.addValue("oscPadAverageV", oscPadAverageV);
+    xml.addValue("oscCentroidXV", oscCentroidXV);
+    xml.addValue("oscCentroidYV", oscCentroidYV);
+    xml.addValue("oscWeightedCentroidXV", oscWeightedCentroidXV);
+    xml.addValue("oscWeightedCentroidYV", oscWeightedCentroidYV);
+    xml.addValue("oscAverageInterFingerDistanceV", oscAverageInterFingerDistanceV);
+    xml.addValue("oscPerimeterV", oscPerimeterV);
+    xml.addValue("oscAreaV", oscAreaV);
+    xml.addValue("oscPadWidthV", oscPadWidthV);
+    xml.addValue("oscPadHeightV", oscPadHeightV);
+    xml.addValue("oscWhRatioV", oscWhRatioV);
+    
+    xml.addValue("velocitySmoothness", velocitySmoothness);
+    
     xml.addValue("rLed", rLed);
     xml.addValue("rLedPad", rLedPad);
     xml.addValue("rLedSlider", rLedSlider);
     xml.addValue("rLedButton", rLedButton);
+    
     xml.setToParent();
     xml.save("settings.xml");
 }
@@ -364,14 +508,48 @@ void ofApp::loadSettings() {
     ofXml xml;
     xml.load("settings.xml");
     xml.setTo("Manta");
+    
     host = xml.getValue<string>("host");
     portIn = xml.getValue<int>("portIn");
     portOut = xml.getValue<int>("portOut");
+    
     oscPad = xml.getValue<bool>("oscPad");
     oscPadVelocity = xml.getValue<bool>("oscPadVelocity");
     oscSlider = xml.getValue<bool>("oscSlider");
     oscButton = xml.getValue<bool>("oscButton");
     oscButtonVelocity = xml.getValue<bool>("oscButtonVelocity");
+ 
+    oscNumPads = xml.getValue<bool>("oscNumPads");
+    oscPadSum = xml.getValue<bool>("oscPadSum");
+    oscPadAverage = xml.getValue<bool>("oscPadAverage");
+    oscCentroidX = xml.getValue<bool>("oscCentroidX");
+    oscCentroidY = xml.getValue<bool>("oscCentroidY");
+    oscWeightedCentroidX = xml.getValue<bool>("oscWeightedCentroidX");
+    oscWeightedCentroidY = xml.getValue<bool>("oscWeightedCentroidY");
+    oscAverageInterFingerDistance = xml.getValue<bool>("oscAverageInterFingerDistance");
+    oscPerimeter = xml.getValue<bool>("oscPerimeter");
+    oscArea = xml.getValue<bool>("oscArea");
+    oscPadWidth = xml.getValue<bool>("oscPadWidth");
+    oscPadHeight = xml.getValue<bool>("oscPadHeight");
+    oscWhRatio = xml.getValue<bool>("oscWhRatio");
+    
+    oscNumPadsV = xml.getValue<bool>("oscNumPadsV");
+    oscPadSumV = xml.getValue<bool>("oscPadSumV");
+    oscPadAverageV = xml.getValue<bool>("oscPadAverageV");
+    oscCentroidXV = xml.getValue<bool>("oscCentroidXV");
+    oscCentroidYV = xml.getValue<bool>("oscCentroidYV");
+    oscWeightedCentroidXV = xml.getValue<bool>("oscWeightedCentroidXV");
+    oscWeightedCentroidYV = xml.getValue<bool>("oscWeightedCentroidYV");
+    oscAverageInterFingerDistanceV = xml.getValue<bool>("oscAverageInterFingerDistanceV");
+    oscPerimeterV = xml.getValue<bool>("oscPerimeterV");
+    oscAreaV = xml.getValue<bool>("oscAreaV");
+    oscPadWidthV = xml.getValue<bool>("oscPadWidthV");
+    oscPadHeightV = xml.getValue<bool>("oscPadHeightV");
+    oscWhRatioV = xml.getValue<bool>("oscWhRatioV");
+    
+    velocitySmoothness = xml.getValue<float>("velocitySmoothness");
+    manta.setVelocityLerpRate(1.0 - velocitySmoothness);
+    
     rLed = xml.getValue<bool>("rLed");
     rLedPad = xml.getValue<bool>("rLedPad");
     rLedSlider = xml.getValue<bool>("rLedSlider");
@@ -438,6 +616,119 @@ void ofApp::ButtonVelocityEvent(ofxMantaEvent & evt) {
         sender.sendMessage(msg);
         //cout << "Button velocity event: id " << evt.id << ", value "<< evt.value << endl;
     }
+}
+
+//----------
+void ofApp::sendStatOSCMessage(string address, float value, bool isVelocity) {
+    //cout << "send ("<<ofGetFrameNum()<<")" << address << " " << value << " VEL " << isVelocity << endl;
+    ofxOscMessage msg;
+    isVelocity ? msg.setAddress(address+"Velocity") : msg.setAddress(address);
+    msg.addFloatArg(value);
+    sender.sendMessage(msg);
+}
+
+void ofApp::changedNumPads(float &v) {
+    sendStatOSCMessage(aOscNumPads, numPads, false);
+}
+
+void ofApp::changedPadSum(float &v) {
+    sendStatOSCMessage(aOscPadSum, padSum, false);
+}
+
+void ofApp::changedPadAverage(float &v) {
+    sendStatOSCMessage(aOscPadAverage, padAverage, false);
+}
+
+void ofApp::changedCentroidX(float &v) {
+    sendStatOSCMessage(aOscCentroidX, centroidX, false);
+}
+
+void ofApp::changedCentroidY(float &v) {
+    sendStatOSCMessage(aOscCentroidY, centroidY, false);
+}
+
+void ofApp::changedWeightedCentroidX(float &v) {
+    sendStatOSCMessage(aOscWeightedCentroidX, weightedCentroidX, false);
+}
+
+void ofApp::changedWeightedCentroidY(float &v) {
+    sendStatOSCMessage(aOscWeightedCentroidY, weightedCentroidY, false);
+}
+
+void ofApp::changedAverageInterFingerDistance(float &v) {
+    sendStatOSCMessage(aOscAverageInterFingerDistance, averageInterFingerDistance, false);
+}
+
+void ofApp::changedPerimeter(float &v) {
+    sendStatOSCMessage(aOscPerimeter, perimeter, false);
+}
+
+void ofApp::changedArea(float &v) {
+    sendStatOSCMessage(aOscArea, area, false);
+}
+
+void ofApp::changedPadWidth(float &v) {
+    sendStatOSCMessage(aOscPadWidth, padWidth, false);
+}
+
+void ofApp::changedPadHeight(float &v) {
+    sendStatOSCMessage(aOscPadHeight, padHeight, false);
+}
+
+void ofApp::changedWhRatio(float &v) {
+    sendStatOSCMessage(aOscWhRatio, whRatio, false);
+}
+
+void ofApp::changedNumPadsVelocity(float &v) {
+    sendStatOSCMessage(aOscNumPads, numPadsVelocity, true);
+}
+
+void ofApp::changedPadSumVelocity(float &v) {
+    sendStatOSCMessage(aOscPadSum, padSumVelocity, true);
+}
+
+void ofApp::changedPadAverageVelocity(float &v) {
+    sendStatOSCMessage(aOscPadAverage, padAverageVelocity, true);
+}
+
+void ofApp::changedCentroidVelocityX(float &v) {
+    sendStatOSCMessage(aOscCentroidX, centroidVelocityX, true);
+}
+
+void ofApp::changedCentroidVelocityY(float &v) {
+    sendStatOSCMessage(aOscCentroidY, centroidVelocityY, true);
+}
+
+void ofApp::changedWeightedCentroidVelocityX(float &v) {
+    sendStatOSCMessage(aOscWeightedCentroidX, weightedCentroidVelocityX, true);
+}
+
+void ofApp::changedWeightedCentroidVelocityY(float &v) {
+    sendStatOSCMessage(aOscWeightedCentroidY, weightedCentroidVelocityY, true);
+}
+
+void ofApp::changedAverageInterFingerDistanceVelocity(float &v) {
+    sendStatOSCMessage(aOscAverageInterFingerDistance, averageInterFingerDistanceVelocity, true);
+}
+
+void ofApp::changedPerimeterVelocity(float &v) {
+    sendStatOSCMessage(aOscPerimeter, perimeterVelocity, true);
+}
+
+void ofApp::changedAreaVelocity(float &v) {
+    sendStatOSCMessage(aOscArea, areaVelocity, true);
+}
+
+void ofApp::changedWidthVelocity(float &v) {
+    sendStatOSCMessage(aOscPadWidth, widthVelocity, true);
+}
+
+void ofApp::changedHeightVelocity(float &v) {
+    sendStatOSCMessage(aOscPadHeight, heightVelocity, true);
+}
+
+void ofApp::changedWhRatioVelocity(float &v) {
+    sendStatOSCMessage(aOscWhRatio, whRatioVelocity, true);
 }
 
 //----------

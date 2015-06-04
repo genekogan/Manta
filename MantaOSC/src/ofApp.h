@@ -8,7 +8,6 @@
 class ofApp : public ofBaseApp
 {
 private:
-    ~ofApp() {exit();}
     void setup();
     void update();
     void draw();
@@ -27,6 +26,9 @@ private:
     
     void setupOscSender(string _host, int _portOut, bool force=false);
     void setupOscReceiver(int _portIn, bool force=false);
+    
+    void saveSettings();
+    void loadSettings();
     
     int view;
     

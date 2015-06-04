@@ -1,0 +1,14 @@
+<Manta>
+	<host>localhost</host>
+	<portIn>2880</portIn>
+	<portOut>2879</portOut>
+	<oscPad>1</oscPad>
+	<oscPadVelocity>1</oscPadVelocity>
+	<oscSlider>1</oscSlider>
+	<oscButton>1</oscButton>
+	<oscButtonVelocity>1</oscButtonVelocity>
+	<rLed>1</rLed>
+	<rLedPad>1</rLedPad>
+	<rLedSlider>1</rLedSlider>
+	<rLedButton>1</rLedButton>
+</Manta>

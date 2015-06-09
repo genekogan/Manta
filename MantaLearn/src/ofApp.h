@@ -1,8 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
-#include "Control.h"
-#include "MantaLearn.h"
+
+#include "ofxManta.h"
+#include "ofxUI.h"
+#include "ofxLearn.h"
 
 class ofApp : public ofBaseApp{
 
@@ -20,6 +22,8 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-		
-    MantaLearn learn;
+
+    ofxLearnMLPThreaded mlp;
+    ofxUICanvas *gui;
+    ofxManta manta;
 };

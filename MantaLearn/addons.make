@@ -1,5 +1,4 @@
 ofxOsc
 ofxXmlSettings
-ofxSpreadsheet
-ofxTouchOsc
+ofxManta
 ofxUI

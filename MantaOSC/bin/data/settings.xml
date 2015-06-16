@@ -1,9 +1,11 @@
 <Manta>
 	<host>localhost</host>
 	<portIn>2880</portIn>
-	<portOut>2879</portOut>
+	<portOut>12347</portOut>
+	<padFormat>0</padFormat>
 	<oscPad>1</oscPad>
-	<oscPadVelocity>1</oscPadVelocity>
+	<oscPadOn>1</oscPadOn>
+	<oscPadOff>1</oscPadOff>
 	<oscSlider>1</oscSlider>
 	<oscButton>1</oscButton>
 	<oscButtonVelocity>1</oscButtonVelocity>

@@ -3,7 +3,8 @@
 	<portIn>2880</portIn>
 	<portOut>2879</portOut>
 	<oscPad>1</oscPad>
-	<oscPadVelocity>0</oscPadVelocity>
+	<oscPadOn>0</oscPadOn>
+	<oscPadOff>0</oscPadOff>
 	<oscSlider>1</oscSlider>
 	<oscButton>0</oscButton>
 	<oscButtonVelocity>1</oscButtonVelocity>
@@ -33,7 +34,7 @@
 	<oscPadWidthV>0</oscPadWidthV>
 	<oscPadHeightV>1</oscPadHeightV>
 	<oscWhRatioV>0</oscWhRatioV>
-	<velocitySmoothness>0.816327</velocitySmoothness>
+	<velocitySmoothness>0.670918</velocitySmoothness>
 	<rLed>1</rLed>
 	<rLedPad>1</rLedPad>
 	<rLedSlider>1</rLedSlider>

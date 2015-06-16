@@ -5,9 +5,9 @@ MantaStats::MantaStats() : ofxManta()
 {
     selection = 0;
     drawHelperLabel = true;
-
+    
     velocityLerpRate.set("velocity lerp", 0.1, 0.0001, 1.0);
-    EPSILON = 0.0001;
+    EPSILON = 0.00001;
     
     numPads.set("num pads", 0, 0, 8 * 6);
     padSum.set("pad sum", 0, 0, MANTA_MAX_PAD_VALUE * 8 * 6);
@@ -22,7 +22,7 @@ MantaStats::MantaStats() : ofxManta()
     padWidth.set("width", 0, 0, 1);
     padHeight.set("height", 0, 0, 1);
     whRatio.set("width/height", 0, 0, 10);
-
+    
     numPadsVelocity.set("v num pads", 0, -8 * 6, 8 * 6);
     padSumVelocity.set("v pad sum", 0, -MANTA_MAX_PAD_VALUE * 8 * 6, MANTA_MAX_PAD_VALUE * 8 * 6);
     padAverageVelocity.set("v pad avg", 0, -MANTA_MAX_PAD_VALUE, MANTA_MAX_PAD_VALUE);
@@ -75,7 +75,7 @@ void MantaStats::setMouseActive(bool mouseActive)
 void MantaStats::update()
 {
     ofxManta::update();
-
+    
     if (!IsConnected()) {
         return;
     }
@@ -173,7 +173,7 @@ void MantaStats::update()
     {
         _width = fingersMax.x - fingersMin.x;
         _height = fingersMax.y - fingersMin.y;
-        _whRatio = _width / _height;
+        _whRatio = _width / (1.0 + _height);
         
         fingersHull = convexHull.getConvexHull(fingers);
         for (int i=0; i<fingersHull.size()-1; i++) {
@@ -183,7 +183,7 @@ void MantaStats::update()
         _area = convexHull.getArea(fingersHull);
         _averageInterFingerDistance = _perimeter / (float) (fingersHull.size()-1);
     }
-
+    
     numPadsVelocity = ofLerp(numPadsVelocity, _numPads-numPads, velocityLerpRate);
     perimeterVelocity = ofLerp(perimeterVelocity, _perimeter-perimeter, velocityLerpRate);
     areaVelocity = ofLerp(areaVelocity, _area-area, velocityLerpRate);
@@ -195,21 +195,20 @@ void MantaStats::update()
     widthVelocity = ofLerp(widthVelocity, _width-padWidth, velocityLerpRate);
     heightVelocity = ofLerp(heightVelocity, _height-padHeight, velocityLerpRate);
     whRatioVelocity = ofLerp(whRatioVelocity, _whRatio-whRatio, velocityLerpRate);
-
-    if (numPadsVelocity < EPSILON)    numPadsVelocity = 0;
-    if (padSumVelocity < EPSILON)    padSumVelocity = 0;
-    if (padAverageVelocity < EPSILON)    padAverageVelocity = 0;
-    if (centroidVelocityX < EPSILON)    centroidVelocityX = 0;
-    if (centroidVelocityY < EPSILON)    centroidVelocityY = 0;
-    if (weightedCentroidVelocityX < EPSILON)    weightedCentroidVelocityX = 0;
-    if (weightedCentroidVelocityY < EPSILON)    weightedCentroidVelocityY = 0;
-    if (averageInterFingerDistanceVelocity < EPSILON)    averageInterFingerDistanceVelocity = 0;
-    if (perimeterVelocity < EPSILON)    perimeterVelocity = 0;
-    if (areaVelocity < EPSILON)    areaVelocity = 0;
-    if (widthVelocity < EPSILON)    widthVelocity = 0;
-    if (heightVelocity < EPSILON)    heightVelocity = 0;
-    if (whRatioVelocity < EPSILON)    whRatioVelocity = 0;
     
+    if (abs(numPadsVelocity) < EPSILON)    numPadsVelocity = 0;
+    if (abs(padSumVelocity) < EPSILON)    padSumVelocity = 0;
+    if (abs(padAverageVelocity) < EPSILON)    padAverageVelocity = 0;
+    if (abs(centroidVelocityX) < EPSILON)    centroidVelocityX = 0;
+    if (abs(centroidVelocityY) < EPSILON)    centroidVelocityY = 0;
+    if (abs(weightedCentroidVelocityX) < EPSILON)    weightedCentroidVelocityX = 0;
+    if (abs(weightedCentroidVelocityY) < EPSILON)    weightedCentroidVelocityY = 0;
+    if (abs(averageInterFingerDistanceVelocity) < EPSILON)    averageInterFingerDistanceVelocity = 0;
+    if (abs(perimeterVelocity) < EPSILON)    perimeterVelocity = 0;
+    if (abs(areaVelocity) < EPSILON)    areaVelocity = 0;
+    if (abs(widthVelocity) < EPSILON)    widthVelocity = 0;
+    if (abs(heightVelocity) < EPSILON)    heightVelocity = 0;
+    if (abs(whRatioVelocity) < EPSILON)    whRatioVelocity = 0;
     
     padWidth = _width;
     padHeight = _height;

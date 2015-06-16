@@ -13,6 +13,8 @@ private:
     void draw();
     void exit();
     
+    void buildGui();
+    
     void windowResized(int w, int h);
     
     void PadEvent(ofxMantaEvent & evt);
@@ -20,6 +22,8 @@ private:
     void ButtonEvent(ofxMantaEvent & evt);
     void PadVelocityEvent(ofxMantaEvent & evt);
     void ButtonVelocityEvent(ofxMantaEvent & evt);
+    
+    void togglePadFormat();
     
     void guiEvent(ofxUIEventArgs &e);
     void guiOptionsEvent(ofxUIEventArgs &e);
@@ -41,14 +45,15 @@ private:
     
     string host;
     int portIn, portOut;
+    bool padFormat;
     
-    string aOscPad, aOscPadVelocity, aOscSlider, aOscButton, aOscButtonVelocity;
-    string dOscPad, dOscPadVelocity, dOscSlider, dOscButton, dOscButtonVelocity;
+    string aOscPad, aOscPadOn, aOscPadOff, aOscSlider, aOscButton, aOscButtonVelocity;
+    string dOscPad, dOscPadOn, dOscPadOff, dOscSlider, dOscButton, dOscButtonVelocity;
     string aRLed, aRLedPad, aRLedSlider, aRLedButton;
     string dRLed, dRLedPad, dRLedSlider, dRLedButton;
 
     bool oscIn, oscOut;
-    bool oscPad, oscPadVelocity, oscSlider, oscButton, oscButtonVelocity;
+    bool oscPad, oscPadOn, oscPadOff, oscSlider, oscButton, oscButtonVelocity;
     bool rLed, rLedPad, rLedSlider, rLedButton;
     bool animated;
     
@@ -56,6 +61,5 @@ private:
     ofxOscReceiver receiver;
     
     bool failedOscIn, failedOscOut;
-    
 };
 

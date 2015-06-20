@@ -2,10 +2,8 @@
 
 //----------
 void ofApp::setup(){
-    //ofSetDataPathRoot("../Resources/data/");
-    
+    ofSetDataPathRoot("../Resources/data/");
     ofSetEscapeQuitsApp(false);
-    
     ofSetWindowTitle("Manta OSC ++");
     
     manta.setup();

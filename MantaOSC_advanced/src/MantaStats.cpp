@@ -292,7 +292,7 @@ void MantaStats::drawStats(int x, int y, int w)
     for (int i=0; i<fingersHull.size(); i++)
     {
         float x = ofMap(fingersHull[i].x, 0, 1, 0, w);
-        float y = ofMap(fingersHull[i].y, 0, 1, 0, h);
+        float y = ofMap(fingersHull[i].y, 0, 1, h, 0);
         ofVertex(x, y);
     }
     ofEndShape();
@@ -304,16 +304,16 @@ void MantaStats::drawStats(int x, int y, int w)
     for (int i=0; i<fingers.size(); i++)
     {
         float x = ofMap(fingers[i].x, 0, 1, 0, w);
-        float y = ofMap(fingers[i].y, 0, 1, 0, h);
+        float y = ofMap(fingers[i].y, 0, 1, h, 0);
         float r = ofMap(fingerValues[i], 0, 196, 0, 10);
         ofCircle(x, y, r);
     }
     
     // draw centroids
     float cx = ofMap(centroidX, 0, 1, 0, w);
-    float cy = ofMap(centroidY, 0, 1, 0, h);
+    float cy = ofMap(centroidY, 0, 1, h, 0);
     float wcx = ofMap(weightedCentroidX, 0, 1, 0, w);
-    float wcy = ofMap(weightedCentroidY, 0, 1, 0, h);
+    float wcy = ofMap(weightedCentroidY, 0, 1, h, 0);
     ofNoFill();
     ofSetColor(150);
     ofSetLineWidth(2);
@@ -422,7 +422,7 @@ void MantaStats::getMantaElementsInBox(int x, int y)
 ofPoint MantaStats::getPositionAtPad(int row, int col)
 {
     return ofPoint(ofMap(row % 2 != 0 ? col+0.5 : col, 0, 9, 0, 1),
-                   ofMap(row + 0.5, 0, 7, 1, 0));
+                   ofMap(row + 0.5, 0, 7, 0, 1));
 }
 
 void MantaStats::setPadSelection(vector<int> idx, int selection)

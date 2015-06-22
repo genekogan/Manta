@@ -82,11 +82,20 @@ void MantaAudioUnitControllerUI::setupUI()
     guiPresets->addSpacer();
     guiPresets->addButton("Save preset", false);
     guiPresets->addSpacer();
+    
     vector<string> presets;
-    ofxUIDropDownList *dd = guiPresets->addDropDownList("Parameters", presets);
+    ofDirectory dir(ofToDataPath("presets/"));
+    dir.allowExt("xml");
+    dir.listDir();
+    for(int i = 0; i < dir.numFiles(); i++) {
+        string presetName = dir.getName(i);
+        presets.push_back(presetName.substr(0, presetName.length()-4));
+    }
+    ofxUIDropDownList *dd = guiPresets->addDropDownList("Load Preset", presets);
     dd->open();
     dd->setAutoClose(false);
     guiPresets->autoSizeToFitWidgets();
+    ofAddListener(guiPresets->newGUIEvent, this, &MantaAudioUnitControllerUI::guiPresetsEvent);
     
     guiGroups->addLabel("MIDI");
     guiGroups->addCanvas(guiMidi);
@@ -196,7 +205,7 @@ void MantaAudioUnitControllerUI::guiViewEvent(ofxUIEventArgs &e)
     if      (selectedElement.type == NONE) {
         guiMantaElement->setTextString("*** none selected ***");
     }
-    else if (selectedElement.type == SLIDER) {
+    else if (selectedElement.type == PAD) {
         guiMantaElement->setTextString("Pad ("+ofToString(floor(selectedElement.index / 8))+", "+ofToString(selectedElement.index % 8)+")");
     }
     else if (selectedElement.type == SLIDER) {
@@ -215,6 +224,48 @@ void MantaAudioUnitControllerUI::guiSelectEvent(ofxUIEventArgs &e)
     selectedAudioUnit = groupSynthLU[e.getCanvasParent()];
     guiSelectedParameter->setTextString(e.getName());
     checkSelectedPair();
+}
+
+void MantaAudioUnitControllerUI::guiPresetsEvent(ofxUIEventArgs &e)
+{
+    if (e.getName() == "Save preset"){
+        if (e.getButton()->getValue())  return;
+        string presetName = ofSystemTextBoxDialog("Preset name");
+        savePreset(presetName);
+        ((ofxUIDropDownList *) guiPresets->getWidget("Load Preset"))->addToggle(presetName);
+        guiPresets->autoSizeToFitWidgets();
+    }
+    else if (e.getParentName() == "Load Preset") {
+        loadPreset(e.getName());
+        map<int, MantaParameterMapping*>::iterator itp = padMap.begin();
+        map<int, MantaParameterMapping*>::iterator its = sliderMap.begin();
+        map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
+        for (; itp != padMap.end(); ++itp) {
+            string newEntryString = "P("+ofToString(floor(itp->first / 8))+","+ofToString(itp->first % 8)+") => "+itp->second->synthName+":"+itp->second->parameter.getName();
+            ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
+            selectedAudioUnit = synths[itp->second->synthName];
+            selectedElement.index = itp->first;
+            selectedElement.type = PAD;
+            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectedAudioUnit, selectedElement, itp->second->parameter.getName());
+        }
+        for (; its != sliderMap.end(); ++its) {
+            string newEntryString = "S("+ofToString(its->first)+") => "+its->second->synthName+":"+its->second->parameter.getName();
+            ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
+            selectedAudioUnit = synths[its->second->synthName];
+            selectedElement.index = its->first;
+            selectedElement.type = SLIDER;
+            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectedAudioUnit, selectedElement, its->second->parameter.getName());
+        }
+        for (; itb != buttonMap.end(); ++itb) {
+            string newEntryString = "B("+ofToString(itb->first)+") => "+itb->second->synthName+":"+itb->second->parameter.getName();
+            ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
+            selectedAudioUnit = synths[itb->second->synthName];
+            selectedElement.index = itb->first;
+            selectedElement.type = BUTTON;
+            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectedAudioUnit, selectedElement, itb->second->parameter.getName());
+        }
+        guiView->autoSizeToFitWidgets();
+    }
 }
 
 void MantaAudioUnitControllerUI::checkSelectedPair()
@@ -316,8 +367,10 @@ void MantaAudioUnitControllerUI::removeSelectedMapping()
     else if (selectedElement.type == BUTTON) {
         removeButtonMapping(selectedElement.index);
     }
-    guiView->removeWidget(selectedViewMappingToggle);
     guiDelete->setVisible(false);
+    guiView->removeWidget(selectedViewMappingToggle);
+    guiView->autoSizeToFitWidgets();
+    guiView->stateChange();
     selectedParameterToggle->setColorBack(OFX_UI_COLOR_BACK);
 }
 

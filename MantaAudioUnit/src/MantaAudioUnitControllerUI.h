@@ -14,7 +14,7 @@ public:
 
 private:
     
-    enum SelectedMantaElementType { NONE, PAD, SLIDER, BUTTON };
+    enum SelectedMantaElementType { NONE=0, PAD, SLIDER, BUTTON };
 
     struct SelectedMantaElement {
         SelectedMantaElementType type;
@@ -44,6 +44,7 @@ private:
     void guiMidiEvent(ofxUIEventArgs &e);
     void guiMapEvent(ofxUIEventArgs &e);
     void guiViewEvent(ofxUIEventArgs &e);
+    void guiPresetsEvent(ofxUIEventArgs &e);
 
     ofxUITabBar *guiGroups;
     ofxUICanvas *guiMapper, *guiView, *guiMidi, *guiPresets;

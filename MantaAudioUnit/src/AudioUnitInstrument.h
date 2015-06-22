@@ -24,7 +24,6 @@ class AudioUnitInstrument
 {
 public:
     void setup(string name, OSType type, OSType subType, OSType manufacturer);
-    void blah();
     void draw(int x_, int y_);
     void showUI() {synth.showUI();}
     
@@ -35,14 +34,16 @@ public:
     void savePreset(string name);
     void loadPreset(string name);
     
-    map<string, vector<AudioUnitParameterInfo> > parameterGroups;
+    map<string, vector<AudioUnitParameterInfo> > & getParameterGroups() {return parameterGroups;}
     
 private:
     
     static void audioUnitParameterChanged(void * context, void * object, const AudioUnitEvent * event, UInt64 hostTime, AudioUnitParameterValue value);
-    
+    void loadParameterGroups();
+
     string name;
     map<int, AudioUnitInstrumentParameter*> parameters;
+    map<string, vector<AudioUnitParameterInfo> > parameterGroups;
     ofxAudioUnitSampler synth;
     AUEventListenerRef auEventListener;
     

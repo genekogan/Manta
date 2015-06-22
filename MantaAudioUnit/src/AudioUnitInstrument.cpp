@@ -26,14 +26,12 @@ void AudioUnitInstrument::setup(string name, OSType type, OSType subType, OSType
     this->subType = subType;
     this->manufacturer = manufacturer;
     synth = ofxAudioUnitSampler(type, subType, manufacturer);
+    loadParameterGroups();
     AUEventListenerCreate(&AudioUnitInstrument::audioUnitParameterChanged,
                           this, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode,
                           0.005, // minimum callback interval (seconds)
                           0.005, // callback granularity (for rate-limiting)
                           &auEventListener);
-    
-    
-    blah();
 }
 
 void AudioUnitInstrument::audioUnitParameterChanged(void *context, void *object, const AudioUnitEvent *event, UInt64 hostTime, AudioUnitParameterValue parameterValue)
@@ -41,7 +39,7 @@ void AudioUnitInstrument::audioUnitParameterChanged(void *context, void *object,
     ((AudioUnitInstrument *) context)->parameters[event->mArgument.mParameter.mParameterID]->setValue(parameterValue);
 }
 
-void AudioUnitInstrument::blah()
+void AudioUnitInstrument::loadParameterGroups()
 {
     int clumpId = -1;
     string groupName;
@@ -59,6 +57,24 @@ void AudioUnitInstrument::blah()
 
 void AudioUnitInstrument::draw(int x_, int y_)
 {
+    int x = x_;
+    int y = y_;
+    int idxGroup = 0;
+    map<string, vector<AudioUnitParameterInfo> >::iterator it = parameterGroups.begin();
+    for (; it != parameterGroups.end(); ++it) {
+        string s = ofToString("Group "+ofToString(idxGroup++));
+        ofDrawBitmapString(s, x, y);
+        y += 15;
+        vector<AudioUnitParameterInfo>::iterator itp = it->second.begin();
+        for (; itp != it->second.end(); ++itp) {
+            string s = ofToString((*itp).name) + " (" + ofToString((*itp).minValue) + "," + ofToString((*itp).maxValue) + ")";
+            ofDrawBitmapString(s, x + 8, y);
+            x = y > 560 ? x + 240 : x;
+            y = y > 560 ? y_ : y + 15;
+        }
+        y = y > 560 ? y_ : y + 8;
+    }
+    /*
     int x = x_;
     int y = y_;
     int clumpId = -1;
@@ -79,6 +95,9 @@ void AudioUnitInstrument::draw(int x_, int y_)
             y = 20;
         }
     }
+    */
+    
+    
 }
 
 ofParameter<float> & AudioUnitInstrument::getParameter(string name)

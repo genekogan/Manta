@@ -3,16 +3,23 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    synth.setup("Aalto", 'aumu', 'Aalt', 'MLbs');
-    synth.showUI();
+    aalto.setup("Aalto", 'aumu', 'Aalt', 'MLbs');
+    aalto.showUI();
+
+    kaivo.setup("Kaivo", 'aumu', 'Kaiv', 'MLbs');
+    kaivo.showUI();
     
+    aalto.getSynth().connectTo(mixer, 0);
+    kaivo.getSynth().connectTo(mixer, 1);
     
-    synth.getSynth().connectTo(mixer, 0);
     mixer.connectTo(output);
     output.start();
     
+    manta.registerAudioUnit(aalto);
+    manta.registerAudioUnit(kaivo);
+    
     manta.setup();
-    manta.setupSelectionUI(&synth);
+    manta.setupUI();
 }
 
 //--------------------------------------------------------------

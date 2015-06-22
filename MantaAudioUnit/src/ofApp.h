@@ -22,7 +22,8 @@ public:
     void gotMessage(ofMessage msg);
     
     
-    AudioUnitInstrument synth;
+    AudioUnitInstrument aalto;
+    AudioUnitInstrument kaivo;
     
     ofxAudioUnitMixer mixer;
     ofxAudioUnitOutput output;

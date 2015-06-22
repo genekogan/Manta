@@ -8,34 +8,56 @@
 class MantaAudioUnitControllerUI : public MantaAudioUnitController {
   
 public:
+    MantaAudioUnitControllerUI();
     ~MantaAudioUnitControllerUI();
-    
-    void setupSelectionUI(AudioUnitInstrument *synth);
+    void setupUI();
 
 private:
     
-    enum SelectedMantaElementType {PAD, SLIDER, BUTTON };
+    enum SelectedMantaElementType { NONE, PAD, SLIDER, BUTTON };
 
     struct SelectedMantaElement {
         SelectedMantaElementType type;
         int index;
     };
     
+    struct MantaParameterPairSelection {
+        AudioUnitInstrument *selectedAudioUnit;
+        SelectedMantaElement mantaElement;
+        string parameterName;
+        MantaParameterPairSelection(AudioUnitInstrument *selectedAudioUnit, SelectedMantaElement mantaElement, string parameterName) {
+            this->selectedAudioUnit = selectedAudioUnit;
+            this->mantaElement = mantaElement;
+            this->parameterName = parameterName;
+        }
+    };
+    
     void eventMantaPadClick(int & e);
     void eventMantaSliderClick(int & e);
     void eventMantaButtonClick(int & e);
     
-    void guiEvent(ofxUIEventArgs &e);
+    void checkSelectedPair();
+    void addSelectedMapping();
+    void removeSelectedMapping();
+    
+    void guiSelectEvent(ofxUIEventArgs &e);
+    void guiMidiEvent(ofxUIEventArgs &e);
     void guiMapEvent(ofxUIEventArgs &e);
-    void setMantaParameterPair();
+    void guiViewEvent(ofxUIEventArgs &e);
 
-    SelectedMantaElement selectedElement;
-    
     ofxUITabBar *guiGroups;
-    ofxUICanvas *guiMapper;
-    ofxUITextArea *guiMantaElement;
-    ofxUITextArea *guiSelectedParameter;
+    ofxUICanvas *guiMapper, *guiView, *guiMidi, *guiPresets;
+    vector<ofxUICanvas*> guiParameterGroups;
+    ofxUITextArea *guiMantaElement, *guiSelectedParameter;
     ofxUIRangeSlider *guiRange;
+    ofxUIButton *guiDelete;
     
-    AudioUnitInstrument *synth;
+    map<pair<AudioUnitInstrument*, string>, AudioUnitParameterInfo> parameterLU;
+    map<ofxUIButton*, AudioUnitInstrument*> synthLU;
+    map<ofxUICanvas*, AudioUnitInstrument*> groupSynthLU;
+    map<ofxUIButton*, MantaParameterPairSelection*> buttonMappingLU;
+    
+    SelectedMantaElement selectedElement;
+    AudioUnitInstrument *selectedAudioUnit;
+    ofxUIToggle *selectedParameterToggle, *selectedViewMappingToggle;
 };

@@ -10,11 +10,17 @@ class MantaAudioUnitController : public MantaStats
 {
 public:
     MantaAudioUnitController();
-    ~MantaAudioUnitController();
+    virtual ~MantaAudioUnitController();
 
-    void mapPadToParameter(int row, int col, AudioUnitInstrument & synth, string parameterName);
+    void registerAudioUnit(AudioUnitInstrument & synth);
+
+    void mapPadToParameter(int row, int column, AudioUnitInstrument & synth, string parameterName);
     void mapSliderToParameter(int index, AudioUnitInstrument & synth, string parameterName);
     void mapButtonToParameter(int index, AudioUnitInstrument & synth, string parameterName);
+
+    void removePadMapping(int row, int column);
+    void removeSliderMapping(int index);
+    void removeButtonMapping(int index);
 
     void mapSelectionToMidiNotes(AudioUnitInstrument & synth);
     void mapAllPadsToMidiNotes(AudioUnitInstrument & synth);
@@ -50,8 +56,6 @@ protected:
     void PadVelocityEvent(ofxMantaEvent & evt);
     void ButtonVelocityEvent(ofxMantaEvent & evt);
 
-    void registerAudioUnit(AudioUnitInstrument & synth);
-    
     void resetMidiMapping();
     void setMidiMapping(int idx, AudioUnitInstrument *synth);
     

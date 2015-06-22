@@ -86,7 +86,7 @@ protected:
     ofParameter<float> velocityLerpRate;
     
     // finger trackers
-    vector<ofPoint> fingers, fingersHull;//, fingersHullNormalized;
+    vector<ofPoint> fingers, fingersHull;
     vector<float> fingerValues;
     
     // tracking pads and sliders (for velocity)

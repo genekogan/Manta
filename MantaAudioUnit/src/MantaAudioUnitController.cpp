@@ -44,6 +44,25 @@ void MantaAudioUnitController::mapButtonToParameter(int index, AudioUnitInstrume
     buttonMap[index] = new MantaParameterMapping(synth, parameterName);
 }
 
+void MantaAudioUnitController::removePadMapping(int row, int column)
+{
+    delete padMap[row * 8 + column];
+    padMap.erase(row * 8 + column);
+    setPadLedState(row, column, Manta::Off);
+}
+
+void MantaAudioUnitController::removeSliderMapping(int index)
+{
+    delete sliderMap[index];
+    sliderMap.erase(index);
+}
+
+void MantaAudioUnitController::removeButtonMapping(int index)
+{
+    delete buttonMap[index];
+    buttonMap.erase(index);
+}
+
 void MantaAudioUnitController::mapSelectionToMidiNotes(AudioUnitInstrument & synth)
 {
     //clearMidiMapping();

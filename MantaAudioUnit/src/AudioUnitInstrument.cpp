@@ -52,6 +52,10 @@ void AudioUnitInstrument::loadParameterGroups()
             parameterGroups[groupName] = parameters;
         }
         parameterGroups[groupName].push_back(params[p]);
+        
+        cout << params[p].name << " " << params[p].flags << endl;
+        
+        
     }
 }
 

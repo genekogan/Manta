@@ -52,9 +52,10 @@
 		ADE367465D2A8EBAD4C7A8D9 /* IpEndpointName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ADD194746185E2DA11468377 /* IpEndpointName.cpp */; };
 		ADE7C2AFC51E3F7E5E389026 /* ofxUISortableList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5613D5D24B00D8AD909F7E6A /* ofxUISortableList.cpp */; };
 		AE281BEBF3A00F1FC37F3DA0 /* ofxUIWaveform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9345327AA463407B3DADBADE /* ofxUIWaveform.cpp */; };
-		B0A644791B3641F3001D0484 /* MantaAudioUnitControllerUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0A644771B3641F3001D0484 /* MantaAudioUnitControllerUI.cpp */; };
-		B0EFAA1E1B35F20700E58E18 /* MantaStats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0EFAA1C1B35F20700E58E18 /* MantaStats.cpp */; };
-		B0EFAA281B35F5B400E58E18 /* MantaAudioUnitController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0EFAA261B35F5B400E58E18 /* MantaAudioUnitController.cpp */; };
+		B0BDD90E1B4193B8008700EB /* AudioUnitInstrument.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0BDD9061B4193B8008700EB /* AudioUnitInstrument.cpp */; };
+		B0BDD90F1B4193B8008700EB /* MantaAudioUnitController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0BDD9081B4193B8008700EB /* MantaAudioUnitController.cpp */; };
+		B0BDD9101B4193B8008700EB /* MantaAudioUnitControllerUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0BDD90A1B4193B8008700EB /* MantaAudioUnitControllerUI.cpp */; };
+		B0BDD9111B4193B8008700EB /* MantaStats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0BDD90C1B4193B8008700EB /* MantaStats.cpp */; };
 		B0EFAA5C1B35F5BE00E58E18 /* AUParamInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0EFAA2C1B35F5BE00E58E18 /* AUParamInfo.cpp */; };
 		B0EFAA5D1B35F5BE00E58E18 /* CAAUParameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0EFAA2E1B35F5BE00E58E18 /* CAAUParameter.cpp */; };
 		B0EFAA5E1B35F5BE00E58E18 /* CADebugMacros.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0EFAA301B35F5BE00E58E18 /* CADebugMacros.cpp */; };
@@ -78,7 +79,6 @@
 		B0EFAA701B35F5BE00E58E18 /* TPCircularBuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = B0EFAA571B35F5BE00E58E18 /* TPCircularBuffer.c */; };
 		B0EFAA711B35F5BE00E58E18 /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0EFAA591B35F5BE00E58E18 /* CoreMIDI.framework */; };
 		B0EFAA721B35F5BE00E58E18 /* CoreMIDI.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B0EFAA591B35F5BE00E58E18 /* CoreMIDI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		B0EFAA751B35F5E500E58E18 /* AudioUnitInstrument.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0EFAA731B35F5E500E58E18 /* AudioUnitInstrument.cpp */; };
 		B0EFAA781B35F62000E58E18 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0EFAA761B35F62000E58E18 /* AudioUnit.framework */; };
 		B0EFAA791B35F62000E58E18 /* CoreAudioKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0EFAA771B35F62000E58E18 /* CoreAudioKit.framework */; };
 		BBAB23CB13894F3D00AA2426 /* GLUT.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = BBAB23BE13894E4700AA2426 /* GLUT.framework */; };
@@ -261,12 +261,14 @@
 		ADD194746185E2DA11468377 /* IpEndpointName.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = IpEndpointName.cpp; path = ../../../addons/ofxOsc/libs/oscpack/src/ip/IpEndpointName.cpp; sourceTree = SOURCE_ROOT; };
 		AE335EB4709BFD4671EEAC84 /* MessageMappingOscPacketListener.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = MessageMappingOscPacketListener.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/MessageMappingOscPacketListener.h; sourceTree = SOURCE_ROOT; };
 		AEFCF7E549ACA862C022AD40 /* ofxUIDefines.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxUIDefines.h; path = ../../../addons/ofxUI/src/ofxUIDefines.h; sourceTree = SOURCE_ROOT; };
-		B0A644771B3641F3001D0484 /* MantaAudioUnitControllerUI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MantaAudioUnitControllerUI.cpp; sourceTree = "<group>"; };
-		B0A644781B3641F3001D0484 /* MantaAudioUnitControllerUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MantaAudioUnitControllerUI.h; sourceTree = "<group>"; };
-		B0EFAA1C1B35F20700E58E18 /* MantaStats.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MantaStats.cpp; sourceTree = "<group>"; };
-		B0EFAA1D1B35F20700E58E18 /* MantaStats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MantaStats.h; sourceTree = "<group>"; };
-		B0EFAA261B35F5B400E58E18 /* MantaAudioUnitController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MantaAudioUnitController.cpp; sourceTree = "<group>"; };
-		B0EFAA271B35F5B400E58E18 /* MantaAudioUnitController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MantaAudioUnitController.h; sourceTree = "<group>"; };
+		B0BDD9061B4193B8008700EB /* AudioUnitInstrument.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AudioUnitInstrument.cpp; path = ../../src/AudioUnitInstrument.cpp; sourceTree = "<group>"; };
+		B0BDD9071B4193B8008700EB /* AudioUnitInstrument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AudioUnitInstrument.h; path = ../../src/AudioUnitInstrument.h; sourceTree = "<group>"; };
+		B0BDD9081B4193B8008700EB /* MantaAudioUnitController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MantaAudioUnitController.cpp; path = ../../src/MantaAudioUnitController.cpp; sourceTree = "<group>"; };
+		B0BDD9091B4193B8008700EB /* MantaAudioUnitController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MantaAudioUnitController.h; path = ../../src/MantaAudioUnitController.h; sourceTree = "<group>"; };
+		B0BDD90A1B4193B8008700EB /* MantaAudioUnitControllerUI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MantaAudioUnitControllerUI.cpp; path = ../../src/MantaAudioUnitControllerUI.cpp; sourceTree = "<group>"; };
+		B0BDD90B1B4193B8008700EB /* MantaAudioUnitControllerUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MantaAudioUnitControllerUI.h; path = ../../src/MantaAudioUnitControllerUI.h; sourceTree = "<group>"; };
+		B0BDD90C1B4193B8008700EB /* MantaStats.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MantaStats.cpp; path = ../../src/MantaStats.cpp; sourceTree = "<group>"; };
+		B0BDD90D1B4193B8008700EB /* MantaStats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MantaStats.h; path = ../../src/MantaStats.h; sourceTree = "<group>"; };
 		B0EFAA2C1B35F5BE00E58E18 /* AUParamInfo.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AUParamInfo.cpp; sourceTree = "<group>"; };
 		B0EFAA2D1B35F5BE00E58E18 /* AUParamInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AUParamInfo.h; sourceTree = "<group>"; };
 		B0EFAA2E1B35F5BE00E58E18 /* CAAUParameter.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CAAUParameter.cpp; sourceTree = "<group>"; };
@@ -312,8 +314,6 @@
 		B0EFAA571B35F5BE00E58E18 /* TPCircularBuffer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = TPCircularBuffer.c; sourceTree = "<group>"; };
 		B0EFAA581B35F5BE00E58E18 /* TPCircularBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCircularBuffer.h; sourceTree = "<group>"; };
 		B0EFAA591B35F5BE00E58E18 /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = ../../../../../../../System/Library/Frameworks/CoreMIDI.framework; sourceTree = "<group>"; };
-		B0EFAA731B35F5E500E58E18 /* AudioUnitInstrument.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AudioUnitInstrument.cpp; sourceTree = "<group>"; };
-		B0EFAA741B35F5E500E58E18 /* AudioUnitInstrument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioUnitInstrument.h; sourceTree = "<group>"; };
 		B0EFAA761B35F62000E58E18 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
 		B0EFAA771B35F62000E58E18 /* CoreAudioKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioKit.framework; path = System/Library/Frameworks/CoreAudioKit.framework; sourceTree = SDKROOT; };
 		B21E7E5F548EEA92F368040B /* tinyxml.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = tinyxml.h; path = ../../../addons/ofxXmlSettings/libs/tinyxml.h; sourceTree = SOURCE_ROOT; };
@@ -524,6 +524,21 @@
 				D60F85FE32E11F4003B80627 /* src */,
 			);
 			name = ofxUI;
+			sourceTree = "<group>";
+		};
+		B0BDD9051B4193A8008700EB /* Manta */ = {
+			isa = PBXGroup;
+			children = (
+				B0BDD9061B4193B8008700EB /* AudioUnitInstrument.cpp */,
+				B0BDD9071B4193B8008700EB /* AudioUnitInstrument.h */,
+				B0BDD9081B4193B8008700EB /* MantaAudioUnitController.cpp */,
+				B0BDD9091B4193B8008700EB /* MantaAudioUnitController.h */,
+				B0BDD90A1B4193B8008700EB /* MantaAudioUnitControllerUI.cpp */,
+				B0BDD90B1B4193B8008700EB /* MantaAudioUnitControllerUI.h */,
+				B0BDD90C1B4193B8008700EB /* MantaStats.cpp */,
+				B0BDD90D1B4193B8008700EB /* MantaStats.h */,
+			);
+			name = Manta;
 			sourceTree = "<group>";
 		};
 		B0EFAA291B35F5BE00E58E18 /* ofxAudioUnit */ = {
@@ -844,17 +859,10 @@
 		E4B69E1C0A3A1BDC003C02F2 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				B0BDD9051B4193A8008700EB /* Manta */,
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				E4B69E1E0A3A1BDC003C02F2 /* ofApp.cpp */,
 				E4B69E1F0A3A1BDC003C02F2 /* ofApp.h */,
-				B0EFAA731B35F5E500E58E18 /* AudioUnitInstrument.cpp */,
-				B0EFAA741B35F5E500E58E18 /* AudioUnitInstrument.h */,
-				B0EFAA1C1B35F20700E58E18 /* MantaStats.cpp */,
-				B0EFAA1D1B35F20700E58E18 /* MantaStats.h */,
-				B0EFAA261B35F5B400E58E18 /* MantaAudioUnitController.cpp */,
-				B0EFAA271B35F5B400E58E18 /* MantaAudioUnitController.h */,
-				B0A644771B3641F3001D0484 /* MantaAudioUnitControllerUI.cpp */,
-				B0A644781B3641F3001D0484 /* MantaAudioUnitControllerUI.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -999,7 +1007,7 @@
 				8F5205AEF8861EF234F0651A /* ofxOscSender.cpp in Sources */,
 				ADE367465D2A8EBAD4C7A8D9 /* IpEndpointName.cpp in Sources */,
 				67FE4C7B15C2F0478C8126C2 /* NetworkingUtils.cpp in Sources */,
-				B0EFAA1E1B35F20700E58E18 /* MantaStats.cpp in Sources */,
+				B0BDD9101B4193B8008700EB /* MantaAudioUnitControllerUI.cpp in Sources */,
 				B0EFAA691B35F5BE00E58E18 /* ofxAudioUnitNetReceive.cpp in Sources */,
 				B0EFAA6E1B35F5BE00E58E18 /* ofxAudioUnitSpeechSynth.cpp in Sources */,
 				B0EFAA701B35F5BE00E58E18 /* TPCircularBuffer.c in Sources */,
@@ -1024,22 +1032,21 @@
 				76586DB3AFE53C18E34B71A0 /* MantaMulti.cpp in Sources */,
 				F48FBB533F94DC44A220AE0A /* MantaUSB.cpp in Sources */,
 				9F5C6DD965B4F3A6DB5B88F8 /* ofxUI2DGraph.cpp in Sources */,
-				B0EFAA281B35F5B400E58E18 /* MantaAudioUnitController.cpp in Sources */,
 				4B3ED367CA852D522E2EE996 /* ofxUI2DPad.cpp in Sources */,
 				F1E8DE8734BA6F69A5112FA8 /* ofxUIBaseDraws.cpp in Sources */,
 				C381F2B7CFD84C0E540EB4BC /* ofxUIBiLabelSlider.cpp in Sources */,
 				7D393646FB859A930EF58917 /* ofxUIButton.cpp in Sources */,
 				7BE46522B64E24FAEDE1A25D /* ofxUICanvas.cpp in Sources */,
+				B0BDD9111B4193B8008700EB /* MantaStats.cpp in Sources */,
 				DF0C851B244C4C867CEA8806 /* ofxUICircleSlider.cpp in Sources */,
 				9BE4AE0AA2B8C436BDFE9D4D /* ofxUIDragableLabelButton.cpp in Sources */,
 				B0EFAA601B35F5BE00E58E18 /* ofxAudioUnitCocoaUtilties.mm in Sources */,
 				F392A99D83698FC099127880 /* ofxUIDropDownList.cpp in Sources */,
 				084025DA517D8329301FE1B6 /* ofxUIEventArgs.cpp in Sources */,
 				B0EFAA6C1B35F5BE00E58E18 /* ofxAudioUnitRecorder.cpp in Sources */,
-				B0A644791B3641F3001D0484 /* MantaAudioUnitControllerUI.cpp in Sources */,
 				7252706DA14C1BE63950ADDA /* ofxUIFPS.cpp in Sources */,
 				22030CBDCC25D815E7ED6757 /* ofxUIFPSSlider.cpp in Sources */,
-				B0EFAA751B35F5E500E58E18 /* AudioUnitInstrument.cpp in Sources */,
+				B0BDD90F1B4193B8008700EB /* MantaAudioUnitController.cpp in Sources */,
 				3D4EA8E172D3E4A30FEFA969 /* ofxUIImage.cpp in Sources */,
 				7F2CD93F681F3C1547B3BF2C /* ofxUIImageButton.cpp in Sources */,
 				FBD0CD0AFE3849C14E829CAF /* ofxUIImageSampler.cpp in Sources */,
@@ -1078,6 +1085,7 @@
 				04C82720B149CE576B8CBB06 /* ofxUIToggle.cpp in Sources */,
 				E3A1109F67D711D6C256031E /* ofxUIToggleMatrix.cpp in Sources */,
 				60012C723B05938A3D388335 /* ofxUIValuePlotter.cpp in Sources */,
+				B0BDD90E1B4193B8008700EB /* AudioUnitInstrument.cpp in Sources */,
 				AE281BEBF3A00F1FC37F3DA0 /* ofxUIWaveform.cpp in Sources */,
 				82845E1F8C90E1F5A99D9868 /* ofxUIWidget.cpp in Sources */,
 				CE5D89B9893EAA12F511DCAC /* ofxUIWidgetWithLabel.cpp in Sources */,

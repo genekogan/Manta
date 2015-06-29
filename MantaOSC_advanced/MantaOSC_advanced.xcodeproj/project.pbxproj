@@ -51,9 +51,9 @@
 		ADE367465D2A8EBAD4C7A8D9 /* IpEndpointName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ADD194746185E2DA11468377 /* IpEndpointName.cpp */; };
 		ADE7C2AFC51E3F7E5E389026 /* ofxUISortableList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5613D5D24B00D8AD909F7E6A /* ofxUISortableList.cpp */; };
 		AE281BEBF3A00F1FC37F3DA0 /* ofxUIWaveform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9345327AA463407B3DADBADE /* ofxUIWaveform.cpp */; };
-		B06135371B1BD3D800F190B0 /* MantaStats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B06135351B1BD3D800F190B0 /* MantaStats.cpp */; };
 		B061353C1B1BD3F000F190B0 /* ofxConvexHull.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B061353A1B1BD3F000F190B0 /* ofxConvexHull.cpp */; };
 		B07DAA0A1B2677BD006D148E /* manta_icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = B01C27F91B266F92001EA4B7 /* manta_icon.icns */; };
+		B0BDD9021B419301008700EB /* MantaStats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B0BDD9001B419301008700EB /* MantaStats.cpp */; };
 		BBAB23CB13894F3D00AA2426 /* GLUT.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = BBAB23BE13894E4700AA2426 /* GLUT.framework */; };
 		BFEFCE32DAFE10A8EB519F6C /* ofxUISpacer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CBAAEC78A0E9EBBB10A05A /* ofxUISpacer.cpp */; };
 		C30B3A2A37F8F32EE7318718 /* ofxUILabelToggle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 76AF3B44E0E2FA8BFBD5F592 /* ofxUILabelToggle.cpp */; };
@@ -232,11 +232,11 @@
 		AE335EB4709BFD4671EEAC84 /* MessageMappingOscPacketListener.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = MessageMappingOscPacketListener.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/MessageMappingOscPacketListener.h; sourceTree = SOURCE_ROOT; };
 		AEFCF7E549ACA862C022AD40 /* ofxUIDefines.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxUIDefines.h; path = ../../../addons/ofxUI/src/ofxUIDefines.h; sourceTree = SOURCE_ROOT; };
 		B01C27F91B266F92001EA4B7 /* manta_icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = manta_icon.icns; sourceTree = "<group>"; };
-		B06135351B1BD3D800F190B0 /* MantaStats.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MantaStats.cpp; sourceTree = "<group>"; };
-		B06135361B1BD3D800F190B0 /* MantaStats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MantaStats.h; sourceTree = "<group>"; };
 		B061353A1B1BD3F000F190B0 /* ofxConvexHull.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxConvexHull.cpp; sourceTree = "<group>"; };
 		B061353B1B1BD3F000F190B0 /* ofxConvexHull.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxConvexHull.h; sourceTree = "<group>"; };
 		B07DAA071B267643006D148E /* MantaOSC_advancedDebug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MantaOSC_advancedDebug.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0BDD9001B419301008700EB /* MantaStats.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MantaStats.cpp; path = ../../src/MantaStats.cpp; sourceTree = "<group>"; };
+		B0BDD9011B419301008700EB /* MantaStats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MantaStats.h; path = ../../src/MantaStats.h; sourceTree = "<group>"; };
 		B21E7E5F548EEA92F368040B /* tinyxml.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = tinyxml.h; path = ../../../addons/ofxXmlSettings/libs/tinyxml.h; sourceTree = SOURCE_ROOT; };
 		B31C608870ECEB2490A93736 /* ofxOscParameterSync.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxOscParameterSync.h; path = ../../../addons/ofxOsc/src/ofxOscParameterSync.h; sourceTree = SOURCE_ROOT; };
 		B3CA0202B1A3B6D8920C2B15 /* ofxUIButton.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxUIButton.h; path = ../../../addons/ofxUI/src/ofxUIButton.h; sourceTree = SOURCE_ROOT; };
@@ -461,6 +461,15 @@
 			path = ../../../addons/ofxConvexHull/src;
 			sourceTree = "<group>";
 		};
+		B0BDD9031B419303008700EB /* Manta */ = {
+			isa = PBXGroup;
+			children = (
+				B0BDD9001B419301008700EB /* MantaStats.cpp */,
+				B0BDD9011B419301008700EB /* MantaStats.h */,
+			);
+			name = Manta;
+			sourceTree = "<group>";
+		};
 		BA6760AC87647DD61A92BD41 /* win32 */ = {
 			isa = PBXGroup;
 			children = (
@@ -683,11 +692,10 @@
 		E4B69E1C0A3A1BDC003C02F2 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				B0BDD9031B419303008700EB /* Manta */,
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				E4B69E1E0A3A1BDC003C02F2 /* ofApp.cpp */,
 				E4B69E1F0A3A1BDC003C02F2 /* ofApp.h */,
-				B06135351B1BD3D800F190B0 /* MantaStats.cpp */,
-				B06135361B1BD3D800F190B0 /* MantaStats.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -841,6 +849,7 @@
 				8F5205AEF8861EF234F0651A /* ofxOscSender.cpp in Sources */,
 				ADE367465D2A8EBAD4C7A8D9 /* IpEndpointName.cpp in Sources */,
 				67FE4C7B15C2F0478C8126C2 /* NetworkingUtils.cpp in Sources */,
+				B0BDD9021B419301008700EB /* MantaStats.cpp in Sources */,
 				510CAFE035E576A4E1502D52 /* UdpSocket.cpp in Sources */,
 				A29D8C96AE042ECEAA1BD4F3 /* NetworkingUtilsWin.cpp in Sources */,
 				28090DEB5109115003E8F1C5 /* UdpSocketWin.cpp in Sources */,
@@ -859,7 +868,6 @@
 				F48FBB533F94DC44A220AE0A /* MantaUSB.cpp in Sources */,
 				9F5C6DD965B4F3A6DB5B88F8 /* ofxUI2DGraph.cpp in Sources */,
 				4B3ED367CA852D522E2EE996 /* ofxUI2DPad.cpp in Sources */,
-				B06135371B1BD3D800F190B0 /* MantaStats.cpp in Sources */,
 				F1E8DE8734BA6F69A5112FA8 /* ofxUIBaseDraws.cpp in Sources */,
 				C381F2B7CFD84C0E540EB4BC /* ofxUIBiLabelSlider.cpp in Sources */,
 				7D393646FB859A930EF58917 /* ofxUIButton.cpp in Sources */,

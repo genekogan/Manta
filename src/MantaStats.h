@@ -69,7 +69,6 @@ protected:
     void keyPressed(ofKeyEventArgs &e);
     void keyReleased(ofKeyEventArgs &e);
     
-    int getSizeSelection();
     void getMantaElementsInBox(int x, int y);
     void setMouseResponders();
     
@@ -119,8 +118,6 @@ protected:
     float EPSILON;
     
     // selection
-    int selection;
     ofPoint dragPoint1, dragPoint2;
-    bool drawHelperLabel;
     bool dragging;
 };

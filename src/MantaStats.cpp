@@ -3,9 +3,6 @@
 
 MantaStats::MantaStats() : ofxManta()
 {
-    selection = 0;
-    drawHelperLabel = true;
-    
     velocityLerpRate.set("velocity lerp", 0.1, 0.0001, 1.0);
     EPSILON = 0.00001;
     
@@ -246,18 +243,13 @@ void MantaStats::draw(int x, int y, int width)
     this->x = x;
     this->y = y;
     this->width = width;
-    
     mainDrawRect = ofRectangle(x, y, width, width * 310.0 / 400.0);
-    
+
+    // draw ofxManta
     ofxManta::draw(x, y, width);
-    if (drawHelperLabel && mainDrawRect.inside(ofGetMouseX(), ofGetMouseY()))
-    {
-        ofPushStyle();
-        ofSetColor(255, 125, 0);
-        ofDrawBitmapString("Click select. CMD multiple. SHIFT velocity",
-                           x+3, y+mainDrawRect.getHeight()*0.22);
-        ofPopStyle();
-    }
+
+    // draw selections
+    
     
     if (px != x || py != y || pwidth != width)
     {
@@ -413,16 +405,9 @@ void MantaStats::setMouseResponders()
     }
 }
 
-int MantaStats::getSizeSelection()
-{
-    return getPadSelection(0).size() + getPadSelection(1).size() +
-    getSliderSelection(0).size() + getSliderSelection(1).size() +
-    getButtonSelection(0).size() + getButtonSelection(1).size();
-}
-
 void MantaStats::getMantaElementsInBox(int x, int y)
 {
-    clearSelection(selection);
+    clearSelection();
     dragPoint2 = ofPoint(x, y);
     ofRectangle rect = ofRectangle(min(dragPoint1.x, dragPoint2.x), min(dragPoint1.y, dragPoint2.y),
                                    abs(dragPoint1.x - dragPoint2.x), abs(dragPoint1.y - dragPoint2.y));
@@ -434,7 +419,7 @@ void MantaStats::getMantaElementsInBox(int x, int y)
             rect.inside(padPositions[i].x, padPositions[i].y+ padPositions[i].height)) {
             int row = floor(i / 8);
             int col = i % 8;
-            addPadToSelection(row, col, selection);
+            addPadToSelection(row, col);
         }
     }
     for (int i=0; i<2; i++)
@@ -443,7 +428,7 @@ void MantaStats::getMantaElementsInBox(int x, int y)
             rect.inside(sliderPositions[i].x+ sliderPositions[i].width, sliderPositions[i].y) ||
             rect.inside(sliderPositions[i].x+ sliderPositions[i].width, sliderPositions[i].y+sliderPositions[i].height) ||
             rect.inside(sliderPositions[i].x, sliderPositions[i].y+ sliderPositions[i].height)) {
-            addSliderToSelection(i, selection);
+            addSliderToSelection(i);
         }
     }
     for (int i=0; i<2; i++)
@@ -452,7 +437,7 @@ void MantaStats::getMantaElementsInBox(int x, int y)
             rect.inside(buttonPositions[i].x+ buttonPositions[i].width, buttonPositions[i].y) ||
             rect.inside(buttonPositions[i].x+ buttonPositions[i].width, buttonPositions[i].y+ buttonPositions[i].height) ||
             rect.inside(buttonPositions[i].x, buttonPositions[i].y+ buttonPositions[i].height)) {
-            addButtonToSelection(i, selection);
+            addButtonToSelection(i);
         }
     }
 }
@@ -470,7 +455,7 @@ void MantaStats::setPadSelection(vector<int> idx, int selection)
     {
         int row = floor(idx[i] / 8);
         int col = idx[i] % 8;
-        addPadToSelection(row, col, selection);
+        addPadToSelection(row, col);
     }
 }
 
@@ -478,7 +463,7 @@ void MantaStats::setSliderSelection(vector<int> idx, int selection)
 {
     clearSliderSelection();
     for (int i = 0; i < idx.size(); i++) {
-        addSliderToSelection(idx[i], selection);
+        addSliderToSelection(idx[i]);
     }
 }
 
@@ -486,7 +471,7 @@ void MantaStats::setButtonSelection(vector<int> idx, int selection)
 {
     clearButtonSelection();
     for (int i = 0; i < idx.size(); i++) {
-        addButtonToSelection(idx[i], selection);
+        addButtonToSelection(idx[i]);
     }
 }
 
@@ -498,8 +483,7 @@ void MantaStats::mousePressed(ofMouseEventArgs &evt)
     dragging = true;
     dragPoint1 = ofPoint(evt.x, evt.y);
     dragPoint2 = dragPoint1;
-    clearSelection(0);
-    clearSelection(1);
+    clearSelection();
 }
 
 void MantaStats::mouseDragged(ofMouseEventArgs &evt)
@@ -523,8 +507,8 @@ void MantaStats::mouseReleased(ofMouseEventArgs &evt)
     {
         if (sliderPositions[i].inside(evt.x, evt.y))
         {
-            if (!shift) clearSelection(selection);
-            addSliderToSelection(i, selection);
+            if (!shift) clearSelection();
+            addSliderToSelection(i);
             ofNotifyEvent(eventSliderClick, i);
             return;
         }
@@ -533,8 +517,8 @@ void MantaStats::mouseReleased(ofMouseEventArgs &evt)
     {
         if (buttonPositions[i].inside(evt.x, evt.y))
         {
-            if (!shift) clearSelection(selection);
-            addButtonToSelection(i, selection);
+            if (!shift) clearSelection();
+            addButtonToSelection(i);
             ofNotifyEvent(eventButtonClick, i);
             return;
         }
@@ -543,8 +527,8 @@ void MantaStats::mouseReleased(ofMouseEventArgs &evt)
     {
         if (padPositions[i].inside(evt.x, evt.y))
         {
-            if (!shift) clearSelection(selection);
-            addPadToSelection(floor(i / 8), i % 8, selection);
+            if (!shift) clearSelection();
+            addPadToSelection(floor(i / 8), i % 8);
             ofNotifyEvent(eventPadClick, i);
             return;
         }
@@ -553,20 +537,14 @@ void MantaStats::mouseReleased(ofMouseEventArgs &evt)
 
 void MantaStats::keyPressed(ofKeyEventArgs &e)
 {
-    if (e.key == OF_KEY_SHIFT) {
-        //selection = 1;
-    }
-    else if (e.key == OF_KEY_COMMAND) {
+    if (e.key == OF_KEY_COMMAND) {
         shift = true;
     }
 }
 
 void MantaStats::keyReleased(ofKeyEventArgs &e)
 {
-    if (e.key == OF_KEY_SHIFT) {
-        //selection = 0;
-    }
-    else if (e.key == OF_KEY_COMMAND) {
+    if (e.key == OF_KEY_COMMAND) {
         shift = false;
     }
 }

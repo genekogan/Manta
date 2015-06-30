@@ -5,7 +5,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     aalto.setup("Aalto", 'aumu', 'Aalt', 'MLbs');
-    //aalto.showUI();
+    aalto.showUI();
 
     kaivo.setup("Kaivo", 'aumu', 'Kaiv', 'MLbs');
     //kaivo.showUI();

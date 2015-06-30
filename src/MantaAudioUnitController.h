@@ -17,10 +17,12 @@ public:
     void mapPadToParameter(int row, int column, AudioUnitInstrument & synth, string parameterName);
     void mapSliderToParameter(int index, AudioUnitInstrument & synth, string parameterName);
     void mapButtonToParameter(int index, AudioUnitInstrument & synth, string parameterName);
+    void mapStatToParameter(int index, AudioUnitInstrument & synth, string parameterName);
 
     void removePadMapping(int row, int column);
     void removeSliderMapping(int index);
     void removeButtonMapping(int index);
+    void removeStatMapping(int index);
 
     void mapSelectionToMidiNotes(AudioUnitInstrument & synth);
     void mapAllPadsToMidiNotes(AudioUnitInstrument & synth);
@@ -53,6 +55,8 @@ protected:
     void PadEvent(ofxMantaEvent & evt);
     void SliderEvent(ofxMantaEvent & evt);
     void ButtonEvent(ofxMantaEvent & evt);
+    void StatEvent(MantaStatsArgs & evt);    
+    
     void PadVelocityEvent(ofxMantaEvent & evt);
     void ButtonVelocityEvent(ofxMantaEvent & evt);
 
@@ -68,6 +72,7 @@ protected:
     map<int, MantaParameterMapping*> padMap;
     map<int, MantaParameterMapping*> sliderMap;
     map<int, MantaParameterMapping*> buttonMap;
+    map<int, MantaParameterMapping*> statMap;
     map<int, AudioUnitNotePair> midiMap;
 
     vector<int> major, minorM, minorH, minorN;

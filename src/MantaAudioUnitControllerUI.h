@@ -14,7 +14,7 @@ public:
 
 private:
     
-    enum SelectedMantaElementType { NONE=0, PAD, SLIDER, BUTTON };
+    enum SelectedMantaElementType { NONE=0, PAD, SLIDER, BUTTON, STAT };
 
     struct SelectedMantaElement {
         SelectedMantaElementType type;
@@ -35,6 +35,7 @@ private:
     void eventMantaPadClick(int & e);
     void eventMantaSliderClick(int & e);
     void eventMantaButtonClick(int & e);
+    void eventMantaStatClick(int & e);
     
     void checkSelectedPair();
     void addSelectedMapping();

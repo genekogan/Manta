@@ -5,6 +5,30 @@
 #include "ofxConvexHull.h"
 
 
+struct MantaStatsInfo
+{
+    string name;
+    float min;
+    float max;
+    MantaStatsInfo(string name, float min, float max)
+    {
+        this->name = name;
+        this->min = min;
+        this->max = max;
+    }
+};
+
+struct MantaStatsArgs
+{
+    int index;
+    float value;
+    MantaStatsArgs(int index, float value)
+    {
+        this->index = index;
+        this->value = value;
+    }
+};
+
 class MantaStats : public ofxManta
 {
 public:
@@ -54,12 +78,17 @@ public:
     void setButtonSelection(vector<int> idx, int selection);
     
     ofPoint getPositionAtPad(int row, int col);
-    
-    ofEvent<int> eventPadClick;
-    ofEvent<int> eventSliderClick;
-    ofEvent<int> eventButtonClick;
+
+    template <typename L, typename M> void addStatListener(L *listener, M method) {ofAddListener(statsEvent, listener, method);}
+    template <typename L, typename M> void removeStatListener(L *listener, M method) {ofRemoveListener(statsEvent, listener, method);}
+
+    MantaStatsInfo getStatsInfo(int index) {return statsInfo[index];}
     
 protected:
+    
+    ofFbo fboStats;
+    bool toRedrawStats = true;
+    void compareStats(int index, ofParameter<float> *statRef, float newStatValue);
     
     void update();
     
@@ -75,6 +104,7 @@ protected:
     ofxConvexHull convexHull;
     ofRectangle padPositions[48], sliderPositions[2], buttonPositions[4];
     ofRectangle mainDrawRect, statsDrawRect;
+    ofRectangle statRects[13];
     int x, y, width, height;
     int px, py, pwidth;
     bool visible, animated;
@@ -114,10 +144,21 @@ protected:
     ofParameter<float> perimeterVelocity, areaVelocity;
     ofParameter<float> widthVelocity, heightVelocity, whRatioVelocity;
     
+    // stats
+    vector<MantaStatsInfo> statsInfo;
+
     // velocity epsilon threshold
     float EPSILON;
     
     // selection
     ofPoint dragPoint1, dragPoint2;
     bool dragging;
+    int statSelection;
+    
+    // events
+    ofEvent<int> eventPadClick;
+    ofEvent<int> eventSliderClick;
+    ofEvent<int> eventButtonClick;
+    ofEvent<int> eventStatClick;
+    ofEvent<MantaStatsArgs> statsEvent;
 };

@@ -11,7 +11,8 @@ void MantaAudioUnitControllerUI::setupUI()
     ofAddListener(eventPadClick, this, &MantaAudioUnitControllerUI::eventMantaPadClick);
     ofAddListener(eventSliderClick, this, &MantaAudioUnitControllerUI::eventMantaSliderClick);
     ofAddListener(eventButtonClick, this, &MantaAudioUnitControllerUI::eventMantaButtonClick);
-    
+    ofAddListener(eventStatClick, this, &MantaAudioUnitControllerUI::eventMantaStatClick);
+
     selectedElement.type = NONE;
     
     guiGroups = new ofxUITabBar();
@@ -138,6 +139,13 @@ void MantaAudioUnitControllerUI::eventMantaButtonClick(int & e)
     selectedElement.type = BUTTON;
 }
 
+void MantaAudioUnitControllerUI::eventMantaStatClick(int & e)
+{
+    guiMantaElement->setTextString(getStatsInfo(e).name);
+    selectedElement.index = e;
+    selectedElement.type = STAT;
+}
+
 void MantaAudioUnitControllerUI::guiMidiEvent(ofxUIEventArgs &e)
 {
     if (e.getName() == "clear") {
@@ -162,6 +170,7 @@ void MantaAudioUnitControllerUI::guiMapEvent(ofxUIEventArgs &e)
         map<int, MantaParameterMapping*>::iterator itp = padMap.begin();
         map<int, MantaParameterMapping*>::iterator its = sliderMap.begin();
         map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
+        map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
         for (; itp != padMap.end(); ++itp) {
             if (itp->second->parameter.getName() == guiSelectedParameter->getTextString() &&
                 itp->second->synthName == selectedAudioUnit->getName()) {
@@ -183,6 +192,14 @@ void MantaAudioUnitControllerUI::guiMapEvent(ofxUIEventArgs &e)
                 itb->second->synthName == selectedAudioUnit->getName()) {
                 itb->second->min = low;
                 itb->second->max = high;
+                return;
+            }
+        }
+        for (; itsm != statMap.end(); ++itsm) {
+            if (itsm->second->parameter.getName() == guiSelectedParameter->getTextString() &&
+                itsm->second->synthName == selectedAudioUnit->getName()) {
+                itsm->second->min = low;
+                itsm->second->max = high;
                 return;
             }
         }
@@ -214,6 +231,9 @@ void MantaAudioUnitControllerUI::guiViewEvent(ofxUIEventArgs &e)
     else if (selectedElement.type == BUTTON) {
         guiMantaElement->setTextString("Button "+ofToString(selectedElement.index));
     }
+    else if (selectedElement.type == STAT) {
+        guiMantaElement->setTextString(getStatsInfo(selectedElement.index).name);
+    }
     
     checkSelectedPair();
 }
@@ -228,18 +248,21 @@ void MantaAudioUnitControllerUI::guiSelectEvent(ofxUIEventArgs &e)
 
 void MantaAudioUnitControllerUI::guiPresetsEvent(ofxUIEventArgs &e)
 {
-    if (e.getName() == "Save preset"){
+    if (e.getName() == "Save preset")
+    {
         if (e.getButton()->getValue())  return;
         string presetName = ofSystemTextBoxDialog("Preset name");
         savePreset(presetName);
         ((ofxUIDropDownList *) guiPresets->getWidget("Load Preset"))->addToggle(presetName);
         guiPresets->autoSizeToFitWidgets();
     }
-    else if (e.getParentName() == "Load Preset") {
+    else if (e.getParentName() == "Load Preset")
+    {
         loadPreset(e.getName());
         map<int, MantaParameterMapping*>::iterator itp = padMap.begin();
         map<int, MantaParameterMapping*>::iterator its = sliderMap.begin();
         map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
+        map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
         for (; itp != padMap.end(); ++itp) {
             string newEntryString = "P("+ofToString(floor(itp->first / 8))+","+ofToString(itp->first % 8)+") => "+itp->second->synthName+":"+itp->second->parameter.getName();
             ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
@@ -264,6 +287,14 @@ void MantaAudioUnitControllerUI::guiPresetsEvent(ofxUIEventArgs &e)
             selectedElement.type = BUTTON;
             buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectedAudioUnit, selectedElement, itb->second->parameter.getName());
         }
+        for (; itsm != statMap.end(); ++itsm) {
+            string newEntryString = "Stat "+ofToString(itb->first)+" => "+itsm->second->synthName+":"+itsm->second->parameter.getName();
+            ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
+            selectedAudioUnit = synths[itsm->second->synthName];
+            selectedElement.index = itsm->first;
+            selectedElement.type = STAT;
+            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectedAudioUnit, selectedElement, itsm->second->parameter.getName());
+        }
         guiView->autoSizeToFitWidgets();
     }
 }
@@ -279,6 +310,7 @@ void MantaAudioUnitControllerUI::checkSelectedPair()
     map<int, MantaParameterMapping*>::iterator itp = padMap.begin();
     map<int, MantaParameterMapping*>::iterator its = sliderMap.begin();
     map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
+    map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
 
     for (; itp != padMap.end(); ++itp) {
         if (itp->second->parameter.getName() == guiSelectedParameter->getTextString() &&
@@ -310,6 +342,16 @@ void MantaAudioUnitControllerUI::checkSelectedPair()
             return;
         }
     }
+    for (; itsm != statMap.end(); ++itsm) {
+        if (itsm->second->parameter.getName() == guiSelectedParameter->getTextString() &&
+            itsm->second->synthName == selectedAudioUnit->getName()) {
+            guiRange->setValueLow(itsm->second->min);
+            guiRange->setValueHigh(itsm->second->max);
+            guiDelete->setVisible(true);
+            guiMapper->autoSizeToFitWidgets();
+            return;
+        }
+    }
 
     guiDelete->setVisible(false);
     guiMapper->autoSizeToFitWidgets();
@@ -318,7 +360,7 @@ void MantaAudioUnitControllerUI::checkSelectedPair()
 void MantaAudioUnitControllerUI::addSelectedMapping()
 {
     string newEntryString;
-    if (selectedElement.type == NONE) {
+    if (selectedElement.type == NONE || selectedAudioUnit == NULL) {
         return;
     }
     else if (selectedElement.type == PAD)
@@ -344,6 +386,13 @@ void MantaAudioUnitControllerUI::addSelectedMapping()
         buttonMap[selectedElement.index]->max = guiRange->getValueHigh();
         newEntryString = "B("+ofToString(selectedElement.index)+") => "+selectedAudioUnit->getName()+":"+guiSelectedParameter->getTextString();
     }
+    else if (selectedElement.type == STAT)
+    {
+        mapStatToParameter(selectedElement.index, *selectedAudioUnit, guiSelectedParameter->getTextString());
+        statMap[selectedElement.index]->min = guiRange->getValueLow();
+        statMap[selectedElement.index]->max = guiRange->getValueHigh();
+        newEntryString = getStatsInfo(selectedElement.index).name+") => "+selectedAudioUnit->getName()+":"+guiSelectedParameter->getTextString();
+    }
 
     ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
     buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectedAudioUnit, selectedElement, guiSelectedParameter->getTextString());
@@ -367,6 +416,10 @@ void MantaAudioUnitControllerUI::removeSelectedMapping()
     else if (selectedElement.type == BUTTON) {
         removeButtonMapping(selectedElement.index);
     }
+    else if (selectedElement.type == STAT) {
+        removeStatMapping(selectedElement.index);
+    }
+
     guiDelete->setVisible(false);
     guiView->removeWidget(selectedViewMappingToggle);
     guiView->autoSizeToFitWidgets();
@@ -379,6 +432,7 @@ MantaAudioUnitControllerUI::~MantaAudioUnitControllerUI()
     ofRemoveListener(eventPadClick, this, &MantaAudioUnitControllerUI::eventMantaPadClick);
     ofRemoveListener(eventSliderClick, this, &MantaAudioUnitControllerUI::eventMantaSliderClick);
     ofRemoveListener(eventButtonClick, this, &MantaAudioUnitControllerUI::eventMantaButtonClick);
+    ofRemoveListener(eventStatClick, this, &MantaAudioUnitControllerUI::eventMantaStatClick);
 
     parameterLU.clear();
     synthLU.clear();

@@ -16,6 +16,7 @@ MantaAudioUnitController::MantaAudioUnitController() : MantaStats()
     addPadListener(this, &MantaAudioUnitController::ButtonEvent);
     addPadVelocityListener(this, &MantaAudioUnitController::PadVelocityEvent);
     addButtonVelocityListener(this, &MantaAudioUnitController::ButtonVelocityEvent);
+    addStatListener(this, &MantaAudioUnitController::StatEvent);
 }
 
 void MantaAudioUnitController::registerAudioUnit(AudioUnitInstrument & synth)
@@ -44,6 +45,12 @@ void MantaAudioUnitController::mapButtonToParameter(int index, AudioUnitInstrume
     buttonMap[index] = new MantaParameterMapping(synth, parameterName);
 }
 
+void MantaAudioUnitController::mapStatToParameter(int index, AudioUnitInstrument & synth, string parameterName)
+{
+    registerAudioUnit(synth);
+    statMap[index] = new MantaParameterMapping(synth, parameterName);
+}
+
 void MantaAudioUnitController::removePadMapping(int row, int column)
 {
     delete padMap[row * 8 + column];
@@ -61,6 +68,12 @@ void MantaAudioUnitController::removeButtonMapping(int index)
 {
     delete buttonMap[index];
     buttonMap.erase(index);
+}
+
+void MantaAudioUnitController::removeStatMapping(int index)
+{
+    delete statMap[index];
+    statMap.erase(index);
 }
 
 void MantaAudioUnitController::mapSelectionToMidiNotes(AudioUnitInstrument & synth)
@@ -139,6 +152,13 @@ void MantaAudioUnitController::ButtonEvent(ofxMantaEvent & evt)
 {
     if (buttonMap.count(evt.id) != 0) {
         buttonMap[evt.id]->parameter.set(ofMap(evt.value, 0, MANTA_MAX_BUTTON_VALUE, buttonMap[evt.id]->min, buttonMap[evt.id]->max));
+    }
+}
+
+void MantaAudioUnitController::StatEvent(MantaStatsArgs & evt)
+{
+    if (statMap.count(evt.index) != 0) {
+        statMap[evt.index]->parameter.set(ofMap(evt.value, getStatsInfo(evt.index).min, getStatsInfo(evt.index).max, statMap[evt.index]->min, statMap[evt.index]->max));
     }
 }
 
@@ -273,6 +293,22 @@ void MantaAudioUnitController::savePreset(string name)
     }
     xml.setToParent();
     
+    xml.addChild("Stats");
+    xml.setTo("Stats");
+    map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
+    for (; itsm != statMap.end(); ++itsm) {
+        ofXml xml_;
+        xml_.addChild("StatMapping");
+        xml_.setTo("StatMapping");
+        xml_.addValue("Id", itsm->first);
+        xml_.addValue("SynthName", itsm->second->synthName);
+        xml_.addValue("ParameterName", itsm->second->parameter.getName());
+        xml_.addValue("Min", itsm->second->min);
+        xml_.addValue("Max", itsm->second->max);
+        xml.addXml(xml_);
+    }
+    xml.setToParent();
+    
     xml.addChild("MidiMap");
     xml.setTo("MidiMap");
     map<int, AudioUnitNotePair>::iterator itm = midiMap.begin();
@@ -363,6 +399,22 @@ void MantaAudioUnitController::loadPreset(string name)
     }
     xml.setToParent();
 
+    xml.setTo("Stats");
+    if (xml.exists("StatMapping[0]")) {
+        xml.setTo("StatMapping[0]");
+        do {
+            int id = xml.getValue<int>("Id");
+            string synthName = xml.getValue<string>("SynthName");
+            string parameterName = xml.getValue<string>("ParameterName");
+            mapStatToParameter(id, *synths[synthName], parameterName);
+            statMap[id]->min = xml.getValue<float>("Min");
+            statMap[id]->max = xml.getValue<float>("Max");
+        }
+        while(xml.setToSibling());
+        xml.setToParent();
+    }
+    xml.setToParent();
+
     xml.setTo("MidiMap");
     if (xml.exists("MidiMapping[0]")) {
         xml.setTo("MidiMapping[0]");
@@ -382,10 +434,12 @@ MantaAudioUnitController::~MantaAudioUnitController()
     removePadListener(this, &MantaAudioUnitController::ButtonEvent);
     removePadVelocityListener(this, &MantaAudioUnitController::PadVelocityEvent);
     removeButtonVelocityListener(this, &MantaAudioUnitController::ButtonVelocityEvent);
-
+    removeStatListener(this, &MantaAudioUnitController::StatEvent);
+    
     map<int, MantaParameterMapping*>::iterator itp = padMap.begin();
     map<int, MantaParameterMapping*>::iterator its = sliderMap.begin();
     map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
+    map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
     while (itp != padMap.end()) {
         delete itp->second;
         padMap.erase(itp);
@@ -398,7 +452,12 @@ MantaAudioUnitController::~MantaAudioUnitController()
         delete itb->second;
         buttonMap.erase(itb);
     }
+    while (itsm != statMap.end()) {
+        delete itsm->second;
+        statMap.erase(itsm);
+    }
     padMap.clear();
     sliderMap.clear();
     buttonMap.clear();
+    statMap.clear();
 }

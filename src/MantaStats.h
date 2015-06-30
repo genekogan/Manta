@@ -32,6 +32,10 @@ struct MantaStatsArgs
 class MantaStats : public ofxManta
 {
 public:
+    bool getIsDragging() {
+        return ofDist(dragPoint1.x, dragPoint1.y, dragPoint2.x, dragPoint2.y) > 40;
+    }
+    
     MantaStats();
     
     void setMouseActive(bool active);

@@ -56,6 +56,7 @@ void MantaAudioUnitControllerUI::setupUI()
     
     // Midi selection gui
     guiMidi = new ofxUICanvas();
+    guiMidi->setPosition(800, 150);
     guiMidi->setName("Midi selection");
     guiMidi->addLabel("Midi selection");
     guiMidi->addSpacer();
@@ -98,9 +99,6 @@ void MantaAudioUnitControllerUI::setupUI()
     guiPresets->autoSizeToFitWidgets();
     ofAddListener(guiPresets->newGUIEvent, this, &MantaAudioUnitControllerUI::guiPresetsEvent);
     
-    guiGroups->addLabel("MIDI");
-    guiGroups->addCanvas(guiMidi);
-    guiGroups->addSpacer();
     guiGroups->addLabel("View");
     guiGroups->addCanvas(guiView);
     guiGroups->addCanvas(guiPresets);

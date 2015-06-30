@@ -524,9 +524,9 @@ void MantaStats::mousePressed(ofMouseEventArgs &evt)
     dragging = true;
     dragPoint1 = ofPoint(evt.x, evt.y);
     dragPoint2 = dragPoint1;
-    clearSelection();
     statSelection = -1;
     toRedrawStats = true;
+    //clearSelection();
 }
 
 void MantaStats::mouseDragged(ofMouseEventArgs &evt)
@@ -554,7 +554,7 @@ void MantaStats::mouseReleased(ofMouseEventArgs &evt)
     {
         if (sliderPositions[i].inside(evt.x, evt.y))
         {
-            if (!shift) clearSelection();
+            if (!shift && !getIsDragging()) clearSelection();
             addSliderToSelection(i);
             ofNotifyEvent(eventSliderClick, i);
             return;
@@ -564,7 +564,7 @@ void MantaStats::mouseReleased(ofMouseEventArgs &evt)
     {
         if (buttonPositions[i].inside(evt.x, evt.y))
         {
-            if (!shift) clearSelection();
+            if (!shift && !getIsDragging()) clearSelection();
             addButtonToSelection(i);
             ofNotifyEvent(eventButtonClick, i);
             return;
@@ -574,7 +574,7 @@ void MantaStats::mouseReleased(ofMouseEventArgs &evt)
     {
         if (padPositions[i].inside(evt.x, evt.y))
         {
-            if (!shift) clearSelection();
+            if (!shift && !getIsDragging()) clearSelection();
             addPadToSelection(floor(i / 8), i % 8);
             ofNotifyEvent(eventPadClick, i);
             return;
@@ -584,6 +584,7 @@ void MantaStats::mouseReleased(ofMouseEventArgs &evt)
     {
         if (statRects[i].inside(evt.x, evt.y))
         {
+            if (!shift && !getIsDragging()) clearSelection();
             statSelection = i;
             toRedrawStats = true;
             ofNotifyEvent(eventStatClick, i);

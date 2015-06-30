@@ -1,0 +1,5 @@
+ofxOsc
+ofxXmlSettings
+ofxConvexHull
+ofxManta
+ofxUI

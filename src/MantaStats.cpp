@@ -346,7 +346,7 @@ void MantaStats::drawStats(int x, int y, int w)
         ofNoFill();
         for (int i=0; i<statsInfo.size(); i++)
         {
-            statSelection == i ? ofSetColor(0, 255, 0) : ofSetColor(255);
+            statSelection == i ? ofSetColor(0, 255, 0) : ofSetColor(statsInfo[i].color);
             ofRect(statRects[i]);
         }
         ofPopMatrix();
@@ -481,6 +481,7 @@ void MantaStats::getMantaElementsInBox(int x, int y)
             addButtonToSelection(i);
         }
     }
+    redrawComponents();
 }
 
 ofPoint MantaStats::getPositionAtPad(int row, int col)
@@ -556,6 +557,7 @@ void MantaStats::mouseReleased(ofMouseEventArgs &evt)
         {
             if (!shift && !getIsDragging()) clearSelection();
             addSliderToSelection(i);
+            redrawComponents();
             ofNotifyEvent(eventSliderClick, i);
             return;
         }
@@ -566,6 +568,7 @@ void MantaStats::mouseReleased(ofMouseEventArgs &evt)
         {
             if (!shift && !getIsDragging()) clearSelection();
             addButtonToSelection(i);
+            redrawComponents();
             ofNotifyEvent(eventButtonClick, i);
             return;
         }
@@ -576,6 +579,7 @@ void MantaStats::mouseReleased(ofMouseEventArgs &evt)
         {
             if (!shift && !getIsDragging()) clearSelection();
             addPadToSelection(floor(i / 8), i % 8);
+            redrawComponents();
             ofNotifyEvent(eventPadClick, i);
             return;
         }
@@ -587,6 +591,7 @@ void MantaStats::mouseReleased(ofMouseEventArgs &evt)
             if (!shift && !getIsDragging()) clearSelection();
             statSelection = i;
             toRedrawStats = true;
+            redrawComponents();
             ofNotifyEvent(eventStatClick, i);
             return;
         }

@@ -5,13 +5,13 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     aalto.setup("Aalto", 'aumu', 'Aalt', 'MLbs');
-    aalto.showUI();
+    //aalto.showUI();
 
     kaivo.setup("Kaivo", 'aumu', 'Kaiv', 'MLbs');
     //kaivo.showUI();
     
-    aalto.getSynth().connectTo(mixer, 0);
-    kaivo.getSynth().connectTo(mixer, 1);
+    aalto.connectTo(mixer, 0);
+    kaivo.connectTo(mixer, 1);
     
     mixer.connectTo(output);
     output.start();

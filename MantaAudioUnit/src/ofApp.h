@@ -29,5 +29,4 @@ public:
     ofxAudioUnitOutput output;
     
     MantaAudioUnitControllerUI manta;
-    
 };

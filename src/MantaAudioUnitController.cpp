@@ -1,15 +1,20 @@
 #include "MantaAudioUnitController.h"
 
-MantaAudioUnitController::MantaParameterMapping::MantaParameterMapping(AudioUnitInstrument & synth, string parameterName)
+MantaAudioUnitController::MantaParameterMapping::MantaParameterMapping(AudioUnitInstrument & synth, string parameterName, bool toggle)
 {
     this->synthName = synth.getName();
     this->parameter.makeReferenceTo(synth.getParameter(parameterName));
     this->min = parameter.getMin();
     this->max = parameter.getMax();
+    this->toggle = toggle;
+    if (!toggle) {
+        parameter = min;
+    }
 }
 
 MantaAudioUnitController::MantaAudioUnitController() : MantaStats()
 {
+    toSetMidiLedColor = true;
     setupTheory();
     addPadListener(this, &MantaAudioUnitController::PadEvent);
     addSliderListener(this, &MantaAudioUnitController::SliderEvent);
@@ -17,68 +22,92 @@ MantaAudioUnitController::MantaAudioUnitController() : MantaStats()
     addPadVelocityListener(this, &MantaAudioUnitController::PadVelocityEvent);
     addButtonVelocityListener(this, &MantaAudioUnitController::ButtonVelocityEvent);
     addStatListener(this, &MantaAudioUnitController::StatEvent);
+    
+    setKey(0);
+    setMode(0);
+    setOctave(5);
+
+    setPadFreezingEnabled(false);
+    for (int i = 0; i < 48; i++) {
+        padFrozen[i] = false;
+        padReleased[i] = false;
+    }
 }
 
 void MantaAudioUnitController::registerAudioUnit(AudioUnitInstrument & synth)
 {
-    if (synths.count(synth.getName()) == 0) {
+    if (synths.count(synth.getName()) == 0)
+    {
         synths[synth.getName()] = &synth;
+        if      (synths.size() == 1) synths[synth.getName()]->setColor(ofColor::orange);
+        else if (synths.size() == 2) synths[synth.getName()]->setColor(ofColor::blue);
+        else if (synths.size() == 3) synths[synth.getName()]->setColor(ofColor::yellow);
+        else if (synths.size() == 4) synths[synth.getName()]->setColor(ofColor::magenta);
+        else if (synths.size() == 5) synths[synth.getName()]->setColor(ofColor::red);
+        else if (synths.size() == 6) synths[synth.getName()]->setColor(ofColor::cyan);
+        else if (synths.size() == 7) synths[synth.getName()]->setColor(ofColor::khaki);
+        else if (synths.size() == 8) synths[synth.getName()]->setColor(ofColor::ivory);
     }
 }
 
-void MantaAudioUnitController::mapPadToParameter(int row, int column, AudioUnitInstrument & synth, string parameterName)
+void MantaAudioUnitController::mapPadToParameter(int row, int column, AudioUnitInstrument & synth, string parameterName, bool toggle)
 {
     registerAudioUnit(synth);
-    padMap[row * 8 + column] = new MantaParameterMapping(synth, parameterName);
-    setPadLedState(row, column, Manta::Red);
+    padMap[row * 8 + column] = new MantaParameterMapping(synth, parameterName, toggle);
+    updatePadColor(row, column);
 }
 
 void MantaAudioUnitController::mapSliderToParameter(int index, AudioUnitInstrument & synth, string parameterName)
 {
     registerAudioUnit(synth);
     sliderMap[index] = new MantaParameterMapping(synth, parameterName);
+    setSliderColor(index, synth.getColor());
 }
 
-void MantaAudioUnitController::mapButtonToParameter(int index, AudioUnitInstrument & synth, string parameterName)
+void MantaAudioUnitController::mapButtonToParameter(int index, AudioUnitInstrument & synth, string parameterName, bool toggle)
 {
     registerAudioUnit(synth);
-    buttonMap[index] = new MantaParameterMapping(synth, parameterName);
+    buttonMap[index] = new MantaParameterMapping(synth, parameterName, toggle);
+    updateButtonColor(index);
 }
 
 void MantaAudioUnitController::mapStatToParameter(int index, AudioUnitInstrument & synth, string parameterName)
 {
     registerAudioUnit(synth);
     statMap[index] = new MantaParameterMapping(synth, parameterName);
+    setStatsColor(index, synth.getColor());
 }
 
 void MantaAudioUnitController::removePadMapping(int row, int column)
 {
     delete padMap[row * 8 + column];
     padMap.erase(row * 8 + column);
-    setPadLedState(row, column, Manta::Off);
+    updatePadColor(row, column);
 }
 
 void MantaAudioUnitController::removeSliderMapping(int index)
 {
     delete sliderMap[index];
     sliderMap.erase(index);
+    setSliderColor(index, ofColor::white);
 }
 
 void MantaAudioUnitController::removeButtonMapping(int index)
 {
     delete buttonMap[index];
     buttonMap.erase(index);
+    updateButtonColor(index);
 }
 
 void MantaAudioUnitController::removeStatMapping(int index)
 {
     delete statMap[index];
     statMap.erase(index);
+    setStatsColor(index, ofColor::white);
 }
 
 void MantaAudioUnitController::mapSelectionToMidiNotes(AudioUnitInstrument & synth)
 {
-    //clearMidiMapping();
     vector<int> selection = getPadSelection();
     for (auto s : selection) {
         setMidiMapping(s, &synth);
@@ -100,6 +129,11 @@ void MantaAudioUnitController::clearMidiMapping()
 {
     midiMap.clear();
     markAllPads(Manta::Off);
+    for (int r = 0; r < 6; r++) {
+        for (int c = 0; c < 8; c++) {
+            setPadColor(r, c, ofColor::white);
+        }
+    }
 }
 
 void MantaAudioUnitController::resetMidiMapping()
@@ -118,8 +152,10 @@ void MantaAudioUnitController::setMidiMapping(int idx, AudioUnitInstrument * syn
     int octave1 = octave + floor((2 * row - floor(row / 2) + col) / 7);
     midiMap[idx].synth = synth;
     midiMap[idx].note = getNoteAtScaleDegree(key, degree, mode, octave1);
-    setLedManual(true);
-    setPadLedState(row, col, Manta::Red);
+    setPadColor(row, col, synth->getColor());
+    if (toSetMidiLedColor) {
+        setPadLedState(row, col, Manta::Red);
+    }
 }
 
 void MantaAudioUnitController::setKey(int key)
@@ -134,10 +170,110 @@ void MantaAudioUnitController::setMode(int mode)
     resetMidiMapping();
 }
 
+void MantaAudioUnitController::setOctave(int octave)
+{
+    this->octave = octave;
+    resetMidiMapping();
+}
+
+void MantaAudioUnitController::updatePadColor(int row, int column)
+{
+    if (padMap.count(row * 8 + column) == 0)
+    {
+        setPadLedState(row, column, Manta::Off);
+        setPadColor(row, column, ofColor::white);
+    }
+    else if (padMap[row * 8 + column]->toggle)
+    {
+        ofColor synthColor = synths[padMap[row * 8 + column]->synthName]->getColor();
+        if (padMap[row * 8 + column]->parameter == padMap[row * 8 + column]->min)
+        {
+            setPadColor(row, column, ofColor(synthColor, 100));
+            setPadLedState(row, column, Manta::Off);
+        }
+        else
+        {
+            setPadColor(row, column, synthColor);
+            setPadLedState(row, column, Manta::Red);
+        }
+    }
+    else
+    {
+        ofColor synthColor = synths[padMap[row * 8 + column]->synthName]->getColor();
+        setPadLedState(row, column, Manta::Red);
+        setPadColor(row, column, synthColor);
+    }
+}
+
+void MantaAudioUnitController::updateButtonColor(int index)
+{
+    if (buttonMap.count(index) == 0)
+    {
+        setButtonLedState(index, Manta::Off);
+        setButtonColor(index, ofColor::white);
+    }
+    else if (buttonMap[index]->toggle)
+    {
+        ofColor synthColor = synths[buttonMap[index]->synthName]->getColor();
+        if (buttonMap[index]->parameter == buttonMap[index]->min)
+        {
+            setButtonColor(index, ofColor(synthColor, 100));
+            setButtonLedState(index, Manta::Off);
+        }
+        else
+        {
+            setButtonColor(index, synthColor);
+            setButtonLedState(index, Manta::Red);
+        }
+    }
+    else
+    {
+        ofColor synthColor = synths[buttonMap[index]->synthName]->getColor();
+        setButtonLedState(index, Manta::Red);
+        setButtonColor(index, synthColor);
+    }
+}
+
+void MantaAudioUnitController::freezePads()
+{
+    for (int r = 0; r < 6; r++)
+    {
+        for (int c = 0; c < 8; c++)
+        {
+            if (getPad(r, c) > 0)
+            {
+                padFrozen[c + 8 * r] = true;
+                padReleased[c + 8 * r] = false;
+            }
+        }
+    }
+}
+
+void MantaAudioUnitController::setPadFreezingEnabled(bool toFreezePads)
+{
+    this->toFreezePads = toFreezePads;
+    if (toFreezePads)
+    {
+        setButtonLedState(1, Manta::Red);
+        setButtonColor(1, ofColor(0, 0, 255));
+    }
+    else
+    {
+        setButtonLedState(1, Manta::Off);
+        setButtonColor(1, ofColor::white);
+    }
+}
+
 void MantaAudioUnitController::PadEvent(ofxMantaEvent & evt)
 {
-    if (padMap.count(evt.id) != 0) {
-        padMap[evt.id]->parameter.set(ofMap(evt.value, 0, MANTA_MAX_PAD_VALUE, padMap[evt.id]->min, padMap[evt.id]->max));
+    if (padMap.count(evt.id) != 0)
+    {
+        if (!padFrozen[evt.id] && !padMap[evt.id]->toggle) {
+            padMap[evt.id]->parameter.set(ofMap(evt.value, 0, MANTA_MAX_PAD_VALUE, padMap[evt.id]->min, padMap[evt.id]->max));
+        }
+        else if (padReleased[evt.id]) {
+            padFrozen[evt.id] = false;
+        }
     }
 }
 
@@ -150,7 +286,7 @@ void MantaAudioUnitController::SliderEvent(ofxMantaEvent & evt)
 
 void MantaAudioUnitController::ButtonEvent(ofxMantaEvent & evt)
 {
-    if (buttonMap.count(evt.id) != 0) {
+    if (buttonMap.count(evt.id) != 0 && !buttonMap[evt.id]->toggle) {
         buttonMap[evt.id]->parameter.set(ofMap(evt.value, 0, MANTA_MAX_BUTTON_VALUE, buttonMap[evt.id]->min, buttonMap[evt.id]->max));
     }
 }
@@ -164,6 +300,7 @@ void MantaAudioUnitController::StatEvent(MantaStatsArgs & evt)
 
 void MantaAudioUnitController::PadVelocityEvent(ofxMantaEvent & evt)
 {
+    if (evt.value == 0) padReleased[evt.id] = true;
     if (midiMap.count(evt.id) != 0)
     {
         if (evt.value == 0) {
@@ -173,11 +310,23 @@ void MantaAudioUnitController::PadVelocityEvent(ofxMantaEvent & evt)
             midiMap[evt.id].noteOn(evt.value);
         }
     }
+    else if (padMap.count(evt.id) != 0 && padMap[evt.id]->toggle && evt.value > 0)
+    {
+        padMap[evt.id]->toggleHighLow();
+        updatePadColor(floor(evt.id / 8), evt.id % 8);
+    }
 }
 
 void MantaAudioUnitController::ButtonVelocityEvent(ofxMantaEvent & evt)
 {
-    
+    if (buttonMap.count(evt.id) != 0 && buttonMap[evt.id]->toggle && evt.value > 0)
+    {
+        buttonMap[evt.id]->toggleHighLow();
+        updateButtonColor(evt.id);
+    }
+    else if (toFreezePads && evt.id==1 && evt.value==0) {
+        freezePads();
+    }
 }
 
 void MantaAudioUnitController::setupTheory()
@@ -190,9 +339,6 @@ void MantaAudioUnitController::setupTheory()
     for (auto m : minorN_)  minorN.push_back(m);
     for (auto m : minorH_)  minorH.push_back(m);
     for (auto m : minorM_)  minorM.push_back(m);
-    key = 0;
-    mode = 0;
-    octave = 5;
 }
 
 void MantaAudioUnitController::getChord(int chord[], int root, int octave)
@@ -242,6 +388,8 @@ void MantaAudioUnitController::savePreset(string name)
     xml.setTo("Manta");
     xml.addValue("Key", key);
     xml.addValue("Mode", mode);
+    xml.addValue("Octave", octave);
+    xml.addValue("FreezeEnabled", toFreezePads);
     
     xml.addChild("Pads");
     xml.setTo("Pads");
@@ -256,6 +404,7 @@ void MantaAudioUnitController::savePreset(string name)
         xml_.addValue("ParameterName", itp->second->parameter.getName());
         xml_.addValue("Min", itp->second->min);
         xml_.addValue("Max", itp->second->max);
+        xml_.addValue("Toggle", itp->second->toggle);
         xml.addXml(xml_);
     }
     xml.setToParent();
@@ -289,6 +438,7 @@ void MantaAudioUnitController::savePreset(string name)
         xml_.addValue("ParameterName", itb->second->parameter.getName());
         xml_.addValue("Min", itb->second->min);
         xml_.addValue("Max", itb->second->max);
+        xml_.addValue("Toggle", itb->second->toggle);
         xml.addXml(xml_);
     }
     xml.setToParent();
@@ -350,6 +500,8 @@ void MantaAudioUnitController::loadPreset(string name)
     
     setKey(xml.getValue<int>("Key"));
     setMode(xml.getValue<int>("Mode"));
+    setOctave(xml.getValue<int>("Octave"));
+    setPadFreezingEnabled(xml.getValue<int>("FreezeEnabled") == 1 ? true : false);
 
     xml.setTo("Pads");
     if (xml.exists("PadMapping[0]")) {
@@ -358,7 +510,8 @@ void MantaAudioUnitController::loadPreset(string name)
             int id = xml.getValue<int>("Id");
             string synthName = xml.getValue<string>("SynthName");
             string parameterName = xml.getValue<string>("ParameterName");
-            mapPadToParameter(floor(id / 8), id % 8, *synths[synthName], parameterName);
+            bool toggle = xml.getValue<int>("Toggle") == 1 ? true : false;
+            mapPadToParameter(floor(id / 8), id % 8, *synths[synthName], parameterName, toggle);
             padMap[id]->min = xml.getValue<float>("Min");
             padMap[id]->max = xml.getValue<float>("Max");
         }
@@ -390,7 +543,8 @@ void MantaAudioUnitController::loadPreset(string name)
             int id = xml.getValue<int>("Id");
             string synthName = xml.getValue<string>("SynthName");
             string parameterName = xml.getValue<string>("ParameterName");
-            mapButtonToParameter(id, *synths[synthName], parameterName);
+            bool toggle = xml.getValue<int>("Toggle") == 1 ? true : false;
+            mapButtonToParameter(id, *synths[synthName], parameterName, toggle);
             buttonMap[id]->min = xml.getValue<float>("Min");
             buttonMap[id]->max = xml.getValue<float>("Max");
         }
@@ -417,6 +571,7 @@ void MantaAudioUnitController::loadPreset(string name)
 
     xml.setTo("MidiMap");
     if (xml.exists("MidiMapping[0]")) {
+        clearMidiMapping();
         xml.setTo("MidiMapping[0]");
         do {
             setMidiMapping(xml.getValue<int>("Id"), synths[xml.getValue<string>("SynthName")]);
@@ -424,6 +579,7 @@ void MantaAudioUnitController::loadPreset(string name)
         while(xml.setToSibling());
         xml.setToParent();
     }
+    
     xml.setToParent();
 }
 

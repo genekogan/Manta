@@ -14,9 +14,9 @@ public:
 
     void registerAudioUnit(AudioUnitInstrument & synth);
 
-    void mapPadToParameter(int row, int column, AudioUnitInstrument & synth, string parameterName);
+    void mapPadToParameter(int row, int column, AudioUnitInstrument & synth, string parameterName, bool toggle=false);
     void mapSliderToParameter(int index, AudioUnitInstrument & synth, string parameterName);
-    void mapButtonToParameter(int index, AudioUnitInstrument & synth, string parameterName);
+    void mapButtonToParameter(int index, AudioUnitInstrument & synth, string parameterName, bool toggle=false);
     void mapStatToParameter(int index, AudioUnitInstrument & synth, string parameterName);
 
     void removePadMapping(int row, int column);
@@ -30,6 +30,11 @@ public:
     
     void setKey(int key);
     void setMode(int mode);
+    void setOctave(int octave);
+
+    int getKey() {return key;}
+    int getMode() {return mode;}
+    int getOctave() {return octave;}
 
     void savePreset(string name);
     void loadPreset(string name);
@@ -39,9 +44,11 @@ protected:
     struct MantaParameterMapping
     {
         float min, max;
+        bool toggle;
         ofParameter<float> parameter;
         string synthName;
-        MantaParameterMapping(AudioUnitInstrument & synth, string parameterName);
+        MantaParameterMapping(AudioUnitInstrument & synth, string parameterName, bool toggle=false);
+        void toggleHighLow() {parameter.set(parameter == min ? max : min);}
     };
 
     struct AudioUnitNotePair
@@ -62,21 +69,32 @@ protected:
 
     void resetMidiMapping();
     void setMidiMapping(int idx, AudioUnitInstrument *synth);
+
+    void updatePadColor(int row, int column);
+    void updateButtonColor(int index);
+    
+    void freezePads();
+    void setPadFreezingEnabled(bool toFreezePads);
     
     void setupTheory();
     void getChord(int chord[], int root, int octave=0);
     int getNoteAtScaleDegree(int root, int degree, int mode, int octave);
     
     map<string, AudioUnitInstrument*> synths;
-    
     map<int, MantaParameterMapping*> padMap;
     map<int, MantaParameterMapping*> sliderMap;
     map<int, MantaParameterMapping*> buttonMap;
     map<int, MantaParameterMapping*> statMap;
     map<int, AudioUnitNotePair> midiMap;
 
+    bool padFrozen[48];
+    bool padReleased[48];
+    bool toFreezePads;
+
     vector<int> major, minorM, minorH, minorN;
     int mode;
     int key;
     int octave;
+    
+    bool toSetMidiLedColor;
 };

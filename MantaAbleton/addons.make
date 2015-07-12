@@ -1,0 +1,7 @@
+ofxOsc
+ofxXmlSettings
+ofxAbletonLive
+ofxConvexHull
+ofxManta
+ofxMidi
+ofxUI

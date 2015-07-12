@@ -21,7 +21,6 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     
-    
     AudioUnitInstrument aalto;
     AudioUnitInstrument kaivo;
     

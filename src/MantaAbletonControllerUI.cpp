@@ -1,40 +1,110 @@
-#include "MantaAudioUnitControllerUI.h"
+#include "MantaAbletonControllerUI.h"
 
 
-void MantaAudioUnitControllerUI::setupUI()
+MantaAbletonControllerUI::MantaAbletonControllerUI()
 {
-    ofAddListener(eventPadClick, this, &MantaAudioUnitControllerUI::eventMantaPadClick);
-    ofAddListener(eventSliderClick, this, &MantaAudioUnitControllerUI::eventMantaSliderClick);
-    ofAddListener(eventButtonClick, this, &MantaAudioUnitControllerUI::eventMantaButtonClick);
-    ofAddListener(eventStatClick, this, &MantaAudioUnitControllerUI::eventMantaStatClick);
+    guiGroups = new ofxUITabBar();
+    guiMidi = new ofxUICanvas("Options");
+    guiMapper = new ofxUICanvas("Map parameter");
+    guiView = new ofxUICanvas("View");
+    guiPresets = new ofxUICanvas("Presets");
+
+    guiGroups->setPosition(410, 5);
+    guiMidi->setPosition(800, 175);
+    guiMapper->setPosition(800, 5);
+}
+
+void MantaAbletonControllerUI::abletonLoaded()
+{
+    setupUI();
+}
+
+void MantaAbletonControllerUI::setupUI()
+{
+    ofAddListener(eventPadClick, this, &MantaAbletonControllerUI::eventMantaPadClick);
+    ofAddListener(eventSliderClick, this, &MantaAbletonControllerUI::eventMantaSliderClick);
+    ofAddListener(eventButtonClick, this, &MantaAbletonControllerUI::eventMantaButtonClick);
+    ofAddListener(eventStatClick, this, &MantaAbletonControllerUI::eventMantaStatClick);
     
     selectedElement.type = NONE;
+
+    guiGroups->clearWidgets();
+    guiGroups->removeWidgets();
+    guiMidi->clearWidgets();
+    guiMidi->removeWidgets();
+    guiView->clearWidgets();
+    guiView->removeWidgets();
+    guiPresets->clearWidgets();
+    guiPresets->removeWidgets();
+    guiMapper->clearWidgets();
+    guiMapper->removeWidgets();
     
-    guiGroups = new ofxUITabBar();
-    guiGroups->setPosition(410, 5);
+    // Global parameters
+    vector<string> items;
+    items.push_back("tempo");
+    items.push_back("time");
+    items.push_back("volume");
+    items.push_back("pan");
+    items.push_back("crossfade");
+    ofxUICanvas* guiGlobal = new ofxUICanvas();
+    guiGlobal->setName("Global parameters");
+    guiGlobal->addLabel("Global parameters");
+    guiGlobal->addSpacer();
+    ofxUIDropDownList *ddg = guiGlobal->addDropDownList("Parameters", items);
+    ddg->open();
+    ddg->setAutoClose(false);
+    guiGlobal->autoSizeToFitWidgets();
+    ofAddListener(guiGlobal->newGUIEvent, this, &MantaAbletonControllerUI::guiSelectGlobalEvent);
+    guiGroups->addCanvas(guiGlobal);
     
-    map<string, AudioUnitInstrument*>::iterator its = synths.begin();
-    for (; its != synths.end(); ++its)
+    // Track parameters
+    guiGroups->addLabel("Tracks");
+    map<int, ofxAbletonLiveTrack*>::iterator it = live->getTracks().begin();
+    for (; it != live->getTracks().end(); ++it)
     {
-        guiGroups->addLabel(its->second->getName());
-        map<string, vector<AudioUnitParameterInfo> >::iterator it = its->second->getParameterGroups().begin();
-        for (; it != its->second->getParameterGroups().end(); ++it)
+        vector<string> items;
+        items.push_back("volume");
+        items.push_back("pan");
+        items.push_back("send");
+
+        ofxUICanvas* gui = new ofxUICanvas();
+        gui->setName(it->second->getName());
+        gui->addLabel(it->second->getName());
+        gui->addSpacer();
+        ofxUIDropDownList *dd = gui->addDropDownList("Parameters", items);
+        dd->open();
+        dd->setAutoClose(false);
+        gui->autoSizeToFitWidgets();
+        ofAddListener(gui->newGUIEvent, this, &MantaAbletonControllerUI::guiSelectTrackEvent);
+        guiGroups->addCanvas(gui);
+        groupTrackLU[gui] = it->first;
+    }
+    guiGroups->addSpacer();
+    
+    // Track device parameters
+    it = live->getTracks().begin();
+    for (; it != live->getTracks().end(); ++it)
+    {
+        guiGroups->addLabel(it->second->getName());
+        map<int, ofxAbletonLiveDevice*>::iterator itd = it->second->getDevices().begin();
+        for (; itd != it->second->getDevices().end(); ++itd)
         {
             vector<string> itemsP;
-            for (auto p : its->second->getParameterGroups()[it->first]) {
-                itemsP.push_back(p.name);
-                parameterLU[make_pair(its->second, p.name)] = p;
+            map<int, ofxAbletonLiveParameter*>::iterator itp = itd->second->getParameters().begin();
+            for (; itp != itd->second->getParameters().end(); ++itp) {
+                itemsP.push_back(itp->second->getName());
+                parameterLU[make_pair(itd->second, itp->second->getName())] = itp->second;
             }
             
             int countWithSameName = 0;
-            map<ofxUICanvas*, AudioUnitInstrument*>::iterator itg = groupSynthLU.begin();
-            for (; itg != groupSynthLU.end(); ++itg) {
-                countWithSameName += (itg->first->getName() == it->first);
+            map<ofxUICanvas*, ofxAbletonLiveDevice*>::iterator itg = groupDeviceLU.begin();
+            for (; itg != groupDeviceLU.end(); ++itg) {
+                countWithSameName += (itg->first->getName() == itd->second->getName());
             }
-            
+
             ofxUICanvas* gui = new ofxUICanvas();
-            gui->setName(countWithSameName == 0 ? it->first : it->first + "("+ofToString(countWithSameName)+")");
-            gui->addLabel(it->first);
+            gui->setName(countWithSameName == 0 ? itd->second->getName() : itd->second->getName() + "("+ofToString(countWithSameName)+")");
+            gui->addLabel(itd->second->getName());
             gui->addSpacer();
             ofxUIDropDownList *dd = gui->addDropDownList("Parameters", itemsP);
             dd->open();
@@ -43,37 +113,25 @@ void MantaAudioUnitControllerUI::setupUI()
             
             guiParameterGroups.push_back(gui);
             guiGroups->addCanvas(gui);
-            groupSynthLU[gui] = its->second;
-            ofAddListener(gui->newGUIEvent, this, &MantaAudioUnitControllerUI::guiSelectEvent);
+            groupDeviceLU[gui] = itd->second;
+            groupTrackLU[gui] = it->first;
+            ofAddListener(gui->newGUIEvent, this, &MantaAbletonControllerUI::guiSelectEvent);
         }
         guiGroups->addSpacer();
     }
     
     // Midi selection gui
-    guiMidi = new ofxUICanvas();
-    guiMidi->setPosition(800, 175);
-    guiMidi->setName("Options");
     guiMidi->addLabel("Options");
     guiMidi->addSpacer();
-    its = synths.begin();
-    for (; its != synths.end(); ++its) {
-        guiMidi->addSlider("volume "+its->second->getName(), 0, 1, 1);
-    }
-    its = synths.begin();
-    for (; its != synths.end(); ++its) {
-        guiMidi->addLabelButton("view "+its->second->getName(), false);
-    }
-    guiMidi->addToggle("Pad freeze enabled", false);
+    guiMidi->addLabelButton("Refresh Ableton", false);
+    guiMidi->addLabelToggle("Pad freeze enabled", &toFreezePads);
     guiMidi->addSpacer();
-    
     guiMidi->addLabel("Midi selection");
     guiMidi->addSpacer();
     guiMidi->addButton("clear", false);
-    its = synths.begin();
-    for (; its != synths.end(); ++its) {
-        ofxUIButton *b = guiMidi->addButton("map selection to "+its->second->getName(), false);
-        synthLU[b] = its->second;
-    }
+    guiMidiChannel = guiMidi->addIntSlider("Midi channel", 1, 16, 1);
+    guiMidiMap = guiMidi->addLabelButton("map selection to midi", false);
+    guiMidiMap->setLabelText("map selection to ch. 1");
     guiMidi->addSpacer();
     
     vector<string> modes;
@@ -92,19 +150,17 @@ void MantaAudioUnitControllerUI::setupUI()
     guiMidi->addIntSlider("Octave", 0, 12, getOctave());
     guiMidi->addDropDownList("Mode", modes)->open();
     guiMidi->autoSizeToFitWidgets();
-    ofAddListener(guiMidi->newGUIEvent, this, &MantaAudioUnitControllerUI::guiMidiEvent);
+    ofAddListener(guiMidi->newGUIEvent, this, &MantaAbletonControllerUI::guiMidiEvent);
     resetKeyString();
     
     // Mapping summary gui
-    guiView = new ofxUICanvas();
     guiView->setName("Summary");
     guiView->addLabel("Summary");
     guiView->addSpacer();
     guiView->autoSizeToFitWidgets();
-    ofAddListener(guiView->newGUIEvent, this, &MantaAudioUnitControllerUI::guiViewEvent);
+    ofAddListener(guiView->newGUIEvent, this, &MantaAbletonControllerUI::guiViewEvent);
     
     // Presets gui
-    guiPresets = new ofxUICanvas();
     guiPresets->setName("Presets");
     guiPresets->addLabel("Presets");
     guiPresets->addSpacer();
@@ -123,15 +179,13 @@ void MantaAudioUnitControllerUI::setupUI()
     dd->open();
     dd->setAutoClose(false);
     guiPresets->autoSizeToFitWidgets();
-    ofAddListener(guiPresets->newGUIEvent, this, &MantaAudioUnitControllerUI::guiPresetsEvent);
+    ofAddListener(guiPresets->newGUIEvent, this, &MantaAbletonControllerUI::guiPresetsEvent);
     
     guiGroups->addLabel("View");
     guiGroups->addCanvas(guiView);
     guiGroups->addCanvas(guiPresets);
     
     // Parameter mapping gui
-    guiMapper = new ofxUICanvas("Map parameter");
-    guiMapper->setPosition(800, 5);
     guiMantaElement = guiMapper->addTextArea("Manta", "manta_element");
     guiSelectedParameter = guiMapper->addTextArea("Parameter", "my_param");
     guiMapper->addLabelButton("Map", false);
@@ -140,40 +194,40 @@ void MantaAudioUnitControllerUI::setupUI()
     guiDelete = guiMapper->addButton("Delete", false);
     guiDelete->setVisible(false);
     guiMapper->autoSizeToFitWidgets();
-    ofAddListener(guiMapper->newGUIEvent, this, &MantaAudioUnitControllerUI::guiMapEvent);
+    ofAddListener(guiMapper->newGUIEvent, this, &MantaAbletonControllerUI::guiMapEvent);
     
     toRedrawStats = true;
 }
 
-void MantaAudioUnitControllerUI::eventMantaPadClick(int & e)
+void MantaAbletonControllerUI::eventMantaPadClick(int & e)
 {
     guiMantaElement->setTextString("Pad ("+ofToString(floor(e / 8))+", "+ofToString(e % 8)+")");
     selectedElement.index = e;
     selectedElement.type = PAD;
 }
 
-void MantaAudioUnitControllerUI::eventMantaSliderClick(int & e)
+void MantaAbletonControllerUI::eventMantaSliderClick(int & e)
 {
     guiMantaElement->setTextString("Slider "+ofToString(e));
     selectedElement.index = e;
     selectedElement.type = SLIDER;
 }
 
-void MantaAudioUnitControllerUI::eventMantaButtonClick(int & e)
+void MantaAbletonControllerUI::eventMantaButtonClick(int & e)
 {
     guiMantaElement->setTextString("Button "+ofToString(e));
     selectedElement.index = e;
     selectedElement.type = BUTTON;
 }
 
-void MantaAudioUnitControllerUI::eventMantaStatClick(int & e)
+void MantaAbletonControllerUI::eventMantaStatClick(int & e)
 {
     guiMantaElement->setTextString(getStatsInfo(e).name);
     selectedElement.index = e;
     selectedElement.type = STAT;
 }
 
-void MantaAudioUnitControllerUI::guiMidiEvent(ofxUIEventArgs &e)
+void MantaAbletonControllerUI::guiMidiEvent(ofxUIEventArgs &e)
 {
     if (e.getName() == "clear") {
         clearMidiMapping();
@@ -195,31 +249,22 @@ void MantaAudioUnitControllerUI::guiMidiEvent(ofxUIEventArgs &e)
     else if (e.getName() == "Octave") {
         setOctave(((ofxUIIntSlider *) guiMidi->getWidget("Octave"))->getValue());
     }
-    else if (e.getName() == "Pad freeze enabled") {
-        setPadFreezingEnabled(e.getToggle()->getValue());
+    else if (e.getName() == "Refresh Ableton") {
+        live->refresh();
     }
-    else
-    {
-        map<string, AudioUnitInstrument*>::iterator its = synths.begin();
-        for (; its != synths.end(); ++its)
-        {
-            if (e.getName() == "view "+its->second->getName()) {
-                if (!e.getButton()->getValue()) its->second->getSynth().showUI();
-                return;
-            }
-            else if (e.getName() == "volume "+its->second->getName()) {
-                its->second->setVolume(e.getSlider()->getValue());
-                return;
-            }
-        }
-        
-        // all that's left is to map the midi notes selection
-        mapSelectionToMidiNotes(*synthLU[e.getButton()]);
+    else if (e.getName() == "Pad freeze enabled") {
+        setPadFreezingEnabled(toFreezePads);
+    }
+    else if (e.getName() == "Midi channel") {
+        guiMidiMap->setLabelText("map selection to ch. "+ofToString(guiMidiChannel->getValue()));
+    }
+    else if (e.getName() == "map selection to midi") {
+        mapSelectionToMidiNotes(guiMidiChannel->getValue());
     }
     resetKeyString();
 }
 
-void MantaAudioUnitControllerUI::resetKeyString()
+void MantaAbletonControllerUI::resetKeyString()
 {
     string keys[12]  = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
     string modes[10] = {"Major", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian", "Natural Minor", "Harmonic Minor", "Melodic Minor"};
@@ -227,7 +272,7 @@ void MantaAudioUnitControllerUI::resetKeyString()
     ((ofxUITextArea *) guiMidi->getWidget("Key_"))->setTextString(keyString);
 }
 
-void MantaAudioUnitControllerUI::guiMapEvent(ofxUIEventArgs &e)
+void MantaAbletonControllerUI::guiMapEvent(ofxUIEventArgs &e)
 {
     if (e.getName() == "Map")
     {
@@ -243,9 +288,11 @@ void MantaAudioUnitControllerUI::guiMapEvent(ofxUIEventArgs &e)
         map<int, MantaParameterMapping*>::iterator its = sliderMap.begin();
         map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
         map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
+        
         for (; itp != padMap.end(); ++itp) {
-            if (itp->second->parameter.getName() == guiSelectedParameter->getTextString() &&
-                itp->second->synthName == selectedAudioUnit->getName()) {
+            if ((selectMode == 2 && itp->second->deviceName == selectedDevice->getName()) ||
+                (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(itp->second->track)+" "+itp->second->parameter.getName()) ||
+                (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+itp->second->parameter.getName())) {
                 itp->second->min = low;
                 itp->second->max = high;
                 itp->second->toggle = toggle;
@@ -253,16 +300,18 @@ void MantaAudioUnitControllerUI::guiMapEvent(ofxUIEventArgs &e)
             }
         }
         for (; its != sliderMap.end(); ++its) {
-            if (its->second->parameter.getName() == guiSelectedParameter->getTextString() &&
-                its->second->synthName == selectedAudioUnit->getName()) {
+            if ((selectMode == 2 && its->second->deviceName == selectedDevice->getName()) ||
+                (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(its->second->track)+" "+its->second->parameter.getName()) ||
+                (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+its->second->parameter.getName())) {
                 its->second->min = low;
                 its->second->max = high;
                 return;
             }
         }
         for (; itb != buttonMap.end(); ++itb) {
-            if (itb->second->parameter.getName() == guiSelectedParameter->getTextString() &&
-                itb->second->synthName == selectedAudioUnit->getName()) {
+            if ((selectMode == 2 && itb->second->deviceName == selectedDevice->getName()) ||
+                (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(itb->second->track)+" "+itb->second->parameter.getName()) ||
+                (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+itb->second->parameter.getName())) {
                 itb->second->min = low;
                 itb->second->max = high;
                 itb->second->toggle = toggle;
@@ -270,8 +319,9 @@ void MantaAudioUnitControllerUI::guiMapEvent(ofxUIEventArgs &e)
             }
         }
         for (; itsm != statMap.end(); ++itsm) {
-            if (itsm->second->parameter.getName() == guiSelectedParameter->getTextString() &&
-                itsm->second->synthName == selectedAudioUnit->getName()) {
+            if ((selectMode == 2 && itsm->second->deviceName == selectedDevice->getName()) ||
+                (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(itsm->second->track)+" "+itsm->second->parameter.getName()) ||
+                (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+itsm->second->parameter.getName())) {
                 itsm->second->min = low;
                 itsm->second->max = high;
                 return;
@@ -285,7 +335,7 @@ void MantaAudioUnitControllerUI::guiMapEvent(ofxUIEventArgs &e)
         map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
         for (; itp != padMap.end(); ++itp) {
             if (itp->second->parameter.getName() == guiSelectedParameter->getTextString() &&
-                itp->second->synthName == selectedAudioUnit->getName()) {
+                itp->second->deviceName == selectedDevice->getName()) {
                 itp->second->toggle = toggle;
                 updatePadColor(floor(selectedElement.index / 8), selectedElement.index % 8);
                 return;
@@ -293,7 +343,7 @@ void MantaAudioUnitControllerUI::guiMapEvent(ofxUIEventArgs &e)
         }
         for (; itb != buttonMap.end(); ++itb) {
             if (itb->second->parameter.getName() == guiSelectedParameter->getTextString() &&
-                itb->second->synthName == selectedAudioUnit->getName()) {
+                itb->second->deviceName == selectedDevice->getName()) {
                 itb->second->toggle = toggle;
                 return;
             }
@@ -306,12 +356,14 @@ void MantaAudioUnitControllerUI::guiMapEvent(ofxUIEventArgs &e)
     }
 }
 
-void MantaAudioUnitControllerUI::guiViewEvent(ofxUIEventArgs &e)
+void MantaAbletonControllerUI::guiViewEvent(ofxUIEventArgs &e)
 {
     if (e.getButton()->getValue())  return;
     
     selectedViewMappingToggle = e.getToggle();
-    selectedAudioUnit = buttonMappingLU[e.getButton()]->selectedAudioUnit;
+    selectMode = buttonMappingLU[e.getButton()]->selectMode;
+    selectedDevice = buttonMappingLU[e.getButton()]->selectedDevice;
+    selectedTrack = buttonMappingLU[e.getButton()]->selectedTrack;
     selectedElement = buttonMappingLU[e.getButton()]->mantaElement;
     guiSelectedParameter->setTextString(buttonMappingLU[e.getButton()]->parameterName);
     
@@ -334,15 +386,37 @@ void MantaAudioUnitControllerUI::guiViewEvent(ofxUIEventArgs &e)
     checkSelectedPair();
 }
 
-void MantaAudioUnitControllerUI::guiSelectEvent(ofxUIEventArgs &e)
+void MantaAbletonControllerUI::guiSelectEvent(ofxUIEventArgs &e)
 {
+    if (((ofxUILabelToggle*) e.getParent())->getValue() == 0) return;
+    selectMode = 2;
     selectedParameterToggle = e.getToggle();
-    selectedAudioUnit = groupSynthLU[e.getCanvasParent()];
+    selectedDevice = groupDeviceLU[e.getCanvasParent()];
+    selectedTrack = groupTrackLU[e.getCanvasParent()];
     guiSelectedParameter->setTextString(e.getName());
     checkSelectedPair();
 }
 
-void MantaAudioUnitControllerUI::guiPresetsEvent(ofxUIEventArgs &e)
+void MantaAbletonControllerUI::guiSelectTrackEvent(ofxUIEventArgs &e)
+{
+    if (((ofxUILabelToggle*) e.getParent())->getValue() == 0) return;
+    selectMode = 1;
+    selectedParameterToggle = e.getToggle();
+    selectedTrack = groupTrackLU[e.getCanvasParent()];
+    guiSelectedParameter->setTextString("T"+ofToString(selectedTrack)+" "+e.getName());
+    checkSelectedPair();
+}
+
+void MantaAbletonControllerUI::guiSelectGlobalEvent(ofxUIEventArgs &e)
+{
+    if (((ofxUILabelToggle*) e.getParent())->getValue() == 0) return;
+    selectMode = 0;
+    selectedParameterToggle = e.getToggle();
+    guiSelectedParameter->setTextString("Global "+e.getName());
+    checkSelectedPair();
+}
+
+void MantaAbletonControllerUI::guiPresetsEvent(ofxUIEventArgs &e)
 {
     if (e.getName() == "Save preset")
     {
@@ -355,45 +429,59 @@ void MantaAudioUnitControllerUI::guiPresetsEvent(ofxUIEventArgs &e)
     else if (e.getParentName() == "Load Preset")
     {
         loadPreset(e.getName());
+        
+        // system dialog -> press OK to do the rest
+        // 1) scanLiveSet()
+        // 2) when ready, do manta mapping as below....
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        
+        
+        
         map<int, MantaParameterMapping*>::iterator itp = padMap.begin();
         map<int, MantaParameterMapping*>::iterator its = sliderMap.begin();
         map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
         map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
         for (; itp != padMap.end(); ++itp)
         {
-            string newEntryString = "P("+ofToString(floor(itp->first / 8))+","+ofToString(itp->first % 8)+") => "+itp->second->synthName+":"+itp->second->parameter.getName();
+            string newEntryString = "P("+ofToString(floor(itp->first / 8))+","+ofToString(itp->first % 8)+") => "+itp->second->deviceName+":"+itp->second->parameter.getName();
             ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
-            selectedAudioUnit = synths[itp->second->synthName];
+            selectedDevice = live->getTrack(itp->second->track)->getDevice(itp->second->deviceName);
             selectedElement.index = itp->first;
             selectedElement.type = PAD;
-            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectedAudioUnit, selectedElement, itp->second->parameter.getName());
+            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode, selectedTrack, selectedDevice, selectedElement, itp->second->parameter.getName());
         }
         for (; its != sliderMap.end(); ++its)
         {
-            string newEntryString = "S("+ofToString(its->first)+") => "+its->second->synthName+":"+its->second->parameter.getName();
+            string newEntryString = "S("+ofToString(its->first)+") => "+its->second->deviceName+":"+its->second->parameter.getName();
             ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
-            selectedAudioUnit = synths[its->second->synthName];
+            selectedDevice = live->getTrack(itp->second->track)->getDevice(itp->second->deviceName);
             selectedElement.index = its->first;
             selectedElement.type = SLIDER;
-            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectedAudioUnit, selectedElement, its->second->parameter.getName());
+            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode, selectedTrack, selectedDevice, selectedElement, its->second->parameter.getName());
         }
         for (; itb != buttonMap.end(); ++itb)
         {
-            string newEntryString = "B("+ofToString(itb->first)+") => "+itb->second->synthName+":"+itb->second->parameter.getName();
+            string newEntryString = "B("+ofToString(itb->first)+") => "+itb->second->deviceName+":"+itb->second->parameter.getName();
             ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
-            selectedAudioUnit = synths[itb->second->synthName];
+            selectedDevice = live->getTrack(itp->second->track)->getDevice(itp->second->deviceName);
             selectedElement.index = itb->first;
             selectedElement.type = BUTTON;
-            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectedAudioUnit, selectedElement, itb->second->parameter.getName());
+            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode, selectedTrack, selectedDevice, selectedElement, itb->second->parameter.getName());
         }
         for (; itsm != statMap.end(); ++itsm)
         {
-            string newEntryString = getStatsInfo(selectedElement.index).name+" => "+itsm->second->synthName+":"+itsm->second->parameter.getName();
+            string newEntryString = getStatsInfo(selectedElement.index).name+" => "+itsm->second->deviceName+":"+itsm->second->parameter.getName();
             ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
-            selectedAudioUnit = synths[itsm->second->synthName];
+            selectedDevice = live->getTrack(itp->second->track)->getDevice(itp->second->deviceName);
             selectedElement.index = itsm->first;
             selectedElement.type = STAT;
-            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectedAudioUnit, selectedElement, itsm->second->parameter.getName());
+            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode, selectedTrack, selectedDevice, selectedElement, itsm->second->parameter.getName());
         }
         ((ofxUIIntSlider *) guiMidi->getWidget("Key"))->setValue(getKey());
         ((ofxUIIntSlider *) guiMidi->getWidget("Octave"))->setValue(getOctave());
@@ -403,23 +491,64 @@ void MantaAudioUnitControllerUI::guiPresetsEvent(ofxUIEventArgs &e)
     }
 }
 
-void MantaAudioUnitControllerUI::checkSelectedPair()
+void MantaAbletonControllerUI::checkSelectedPair()
 {
-    AudioUnitParameterInfo p = parameterLU[make_pair(selectedAudioUnit, guiSelectedParameter->getTextString())];
-    guiRange->setMin(p.minValue);
-    guiRange->setMax(p.maxValue);
-    guiRange->setValueLow(p.minValue);
-    guiRange->setValueHigh(p.maxValue);
+    ofPoint range(0, 1);
+    if (selectMode == 0)
+    {
+        if (guiSelectedParameter->getTextString() == "Global tempo") {
+            range.set(live->getTempo().getMin(), live->getTempo().getMax());
+        }
+        else if (guiSelectedParameter->getTextString() == "Global time") {
+            range.set(live->getTime().getMin(), live->getTime().getMax());
+        }
+        else if (guiSelectedParameter->getTextString() == "Global volume") {
+            range.set(live->getVolume().getMin(), live->getVolume().getMax());
+        }
+        else if (guiSelectedParameter->getTextString() == "Global pan") {
+            range.set(live->getPan().getMin(), live->getPan().getMax());
+        }
+        else if (guiSelectedParameter->getTextString() == "Global crossfade") {
+            range.set(live->getCrossFader().getMin(), live->getCrossFader().getMax());
+        }
+    }
+    else if (selectMode == 1)
+    {
+        if (guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" volume") {
+            range.set(live->getTrack(selectedTrack)->getVolume().getMin(), live->getTrack(selectedTrack)->getVolume().getMax());
+        }
+        else if (guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" pan") {
+            range.set(live->getTrack(selectedTrack)->getPan().getMin(), live->getTrack(selectedTrack)->getPan().getMax());
+        }
+        else if (guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" send") {
+            range.set(live->getTrack(selectedTrack)->getSend(0)->send.getMin(), live->getTrack(selectedTrack)->getSend(0)->send.getMax());
+        }
+    }
+    else if (selectMode == 2)
+    {
+        ofxAbletonLiveParameter *p = parameterLU[make_pair(selectedDevice, guiSelectedParameter->getTextString())];
+        guiRange->setMin(p->getMin());
+        guiRange->setMax(p->getMax());
+        guiRange->setValueLow(p->getMin());
+        guiRange->setValueHigh(p->getMax());
+        guiToggle->setValue(false);
+    }
+    
+    guiRange->setMin(range.x);
+    guiRange->setMax(range.y);
+    guiRange->setValueLow(range.x);
+    guiRange->setValueHigh(range.y);
     guiToggle->setValue(false);
     
     map<int, MantaParameterMapping*>::iterator itp = padMap.begin();
     map<int, MantaParameterMapping*>::iterator its = sliderMap.begin();
     map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
     map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
-    
+
     for (; itp != padMap.end(); ++itp) {
-        if (itp->second->parameter.getName() == guiSelectedParameter->getTextString() &&
-            itp->second->synthName == selectedAudioUnit->getName()) {
+        if ((selectMode == 2 && itp->second->deviceName == selectedDevice->getName()) ||
+            (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(itp->second->track)+" "+itp->second->parameter.getName()) ||
+            (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+itp->second->parameter.getName())) {
             guiRange->setValueLow(itp->second->min);
             guiRange->setValueHigh(itp->second->max);
             guiToggle->setValue(itp->second->toggle);
@@ -429,8 +558,9 @@ void MantaAudioUnitControllerUI::checkSelectedPair()
         }
     }
     for (; its != sliderMap.end(); ++its) {
-        if (its->second->parameter.getName() == guiSelectedParameter->getTextString() &&
-            its->second->synthName == selectedAudioUnit->getName()) {
+        if ((selectMode == 2 && its->second->deviceName == selectedDevice->getName()) ||
+            (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(its->second->track)+" "+its->second->parameter.getName()) ||
+            (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+its->second->parameter.getName())) {
             guiRange->setValueLow(its->second->min);
             guiRange->setValueHigh(its->second->max);
             guiDelete->setVisible(true);
@@ -439,8 +569,9 @@ void MantaAudioUnitControllerUI::checkSelectedPair()
         }
     }
     for (; itb != buttonMap.end(); ++itb) {
-        if (itb->second->parameter.getName() == guiSelectedParameter->getTextString() &&
-            itb->second->synthName == selectedAudioUnit->getName()) {
+        if ((selectMode == 2 && itb->second->deviceName == selectedDevice->getName()) ||
+            (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(itb->second->track)+" "+itb->second->parameter.getName()) ||
+            (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+itb->second->parameter.getName())) {
             guiRange->setValueLow(itb->second->min);
             guiRange->setValueHigh(itb->second->max);
             guiToggle->setValue(itb->second->toggle);
@@ -450,8 +581,9 @@ void MantaAudioUnitControllerUI::checkSelectedPair()
         }
     }
     for (; itsm != statMap.end(); ++itsm) {
-        if (itsm->second->parameter.getName() == guiSelectedParameter->getTextString() &&
-            itsm->second->synthName == selectedAudioUnit->getName()) {
+        if ((selectMode == 2 && itsm->second->deviceName == selectedDevice->getName()) ||
+            (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(itsm->second->track)+" "+itsm->second->parameter.getName()) ||
+            (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+itsm->second->parameter.getName())) {
             guiRange->setValueLow(itsm->second->min);
             guiRange->setValueHigh(itsm->second->max);
             guiDelete->setVisible(true);
@@ -464,52 +596,147 @@ void MantaAudioUnitControllerUI::checkSelectedPair()
     guiMapper->autoSizeToFitWidgets();
 }
 
-void MantaAudioUnitControllerUI::addSelectedMapping()
+void MantaAbletonControllerUI::addSelectedMapping()
 {
     string newEntryString;
-    if (selectedElement.type == NONE || selectedAudioUnit == NULL) {
+    if (selectedElement.type == NONE) {
         return;
     }
-    else if (selectedElement.type == PAD)
+    
+    ofParameter<float> *selectedParameter;
+    if (selectMode == 0)
+    {
+        if (guiSelectedParameter->getTextString() == "Global tempo") {
+            selectedParameter = &live->getTempo();
+        }
+        else if (guiSelectedParameter->getTextString() == "Global time") {
+            selectedParameter = &live->getTime();
+        }
+        else if (guiSelectedParameter->getTextString() == "Global volume") {
+            selectedParameter = &live->getVolume();
+        }
+        else if (guiSelectedParameter->getTextString() == "Global pan") {
+            selectedParameter = &live->getPan();
+        }
+        else if (guiSelectedParameter->getTextString() == "Global crossfade") {
+            selectedParameter = &live->getCrossFader();
+        }
+    }
+    else if (selectMode == 1)
+    {
+        if (guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" volume") {
+            selectedParameter = &live->getTrack(selectedTrack)->getVolume();
+        }
+        else if (guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" pan") {
+            selectedParameter = &live->getTrack(selectedTrack)->getPan();
+        }
+        else if (guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" send") {
+            selectedParameter = &live->getTrack(selectedTrack)->getSend(0)->send;
+        }
+    }
+    else if (selectMode == 2 && selectedDevice != NULL)
+    {
+        selectedParameter = selectedDevice->getParameter(guiSelectedParameter->getTextString())->getParameter();
+    }
+    
+
+    if (selectedElement.type == PAD)
     {
         int row = floor(selectedElement.index / 8);
         int col = selectedElement.index % 8;
-        mapPadToParameter(row, col, *selectedAudioUnit, guiSelectedParameter->getTextString(), guiToggle->getValue());
+
+        if (selectMode == 0)
+        {
+            mapPadToParameter(row, col, -1, "Global", *selectedParameter, guiToggle->getValue());
+            newEntryString = "P("+ofToString(row)+","+ofToString(col)+") => "+guiSelectedParameter->getTextString();
+        }
+        else if (selectMode == 1)
+        {
+            mapPadToParameter(row, col, -1, "Track "+ofToString(selectedTrack), *selectedParameter, guiToggle->getValue());
+            newEntryString = "P("+ofToString(row)+","+ofToString(col)+") => "+guiSelectedParameter->getTextString();
+        }
+        else if (selectMode == 2 && selectedDevice != NULL)
+        {
+            mapPadToParameter(row, col, selectedTrack, selectedDevice->getName(), *selectedParameter, guiToggle->getValue());
+            newEntryString = "P("+ofToString(row)+","+ofToString(col)+") => "+selectedDevice->getName()+":"+guiSelectedParameter->getTextString();
+        }
+        
         padMap[selectedElement.index]->min = guiRange->getValueLow();
         padMap[selectedElement.index]->max = guiRange->getValueHigh();
-        newEntryString = "P("+ofToString(row)+","+ofToString(col)+") => "+selectedAudioUnit->getName()+":"+guiSelectedParameter->getTextString();
     }
     else if (selectedElement.type == SLIDER)
     {
-        mapSliderToParameter(selectedElement.index, *selectedAudioUnit, guiSelectedParameter->getTextString());
+        if (selectMode == 0)
+        {
+            mapSliderToParameter(selectedElement.index, -1, "Global", *selectedParameter);
+            newEntryString = "S("+ofToString(selectedElement.index)+") => "+guiSelectedParameter->getTextString();
+        }
+        else if (selectMode == 1)
+        {
+            mapSliderToParameter(selectedElement.index, -1, "Track "+ofToString(selectedTrack), *selectedParameter);
+            newEntryString = "S("+ofToString(selectedElement.index)+") => "+guiSelectedParameter->getTextString();
+        }
+        else if (selectMode == 2 && selectedDevice != NULL)
+        {
+            mapSliderToParameter(selectedElement.index, selectedTrack, selectedDevice->getName(), *selectedParameter);
+            newEntryString = "S("+ofToString(selectedElement.index)+") => "+selectedDevice->getName()+":"+guiSelectedParameter->getTextString();
+        }
+
         sliderMap[selectedElement.index]->min = guiRange->getValueLow();
         sliderMap[selectedElement.index]->max = guiRange->getValueHigh();
-        newEntryString = "S("+ofToString(selectedElement.index)+") => "+selectedAudioUnit->getName()+":"+guiSelectedParameter->getTextString();
     }
     else if (selectedElement.type == BUTTON)
     {
-        mapButtonToParameter(selectedElement.index, *selectedAudioUnit, guiSelectedParameter->getTextString(), guiToggle->getValue());
+        if (selectMode == 0)
+        {
+            mapButtonToParameter(selectedElement.index, -1, "Global", *selectedParameter, guiToggle->getValue());
+            newEntryString = "B("+ofToString(selectedElement.index)+") => "+guiSelectedParameter->getTextString();
+        }
+        else if (selectMode == 1)
+        {
+            mapButtonToParameter(selectedElement.index, -1, "Track "+ofToString(selectedTrack), *selectedParameter, guiToggle->getValue());
+            newEntryString = "B("+ofToString(selectedElement.index)+") => "+guiSelectedParameter->getTextString();
+        }
+        else if (selectMode == 2 && selectedDevice != NULL)
+        {
+            mapButtonToParameter(selectedElement.index, selectedTrack, selectedDevice->getName(), *selectedParameter, guiToggle->getValue());
+            newEntryString = "B("+ofToString(selectedElement.index)+") => "+selectedDevice->getName()+":"+guiSelectedParameter->getTextString();
+        }
+        
         buttonMap[selectedElement.index]->min = guiRange->getValueLow();
         buttonMap[selectedElement.index]->max = guiRange->getValueHigh();
-        newEntryString = "B("+ofToString(selectedElement.index)+") => "+selectedAudioUnit->getName()+":"+guiSelectedParameter->getTextString();
     }
-    else if (selectedElement.type == STAT)
+    else if (selectedElement.type == STAT && selectedDevice != NULL)
     {
-        mapStatToParameter(selectedElement.index, *selectedAudioUnit, guiSelectedParameter->getTextString());
+        if (selectMode == 0)
+        {
+            mapStatToParameter(selectedElement.index, -1, "Global", *selectedParameter);
+            newEntryString = getStatsInfo(selectedElement.index).name+" => "+guiSelectedParameter->getTextString();
+        }
+        else if (selectMode == 1)
+        {
+            mapStatToParameter(selectedElement.index, -1, "Track "+ofToString(selectedTrack), *selectedParameter);
+            newEntryString = getStatsInfo(selectedElement.index).name+" => "+guiSelectedParameter->getTextString();
+        }
+        else if (selectMode == 2 && selectedDevice != NULL)
+        {
+            mapStatToParameter(selectedElement.index, selectedTrack, selectedDevice->getName(), *selectedParameter);
+            newEntryString = getStatsInfo(selectedElement.index).name+" => "+selectedDevice->getName()+":"+guiSelectedParameter->getTextString();
+        }
+        
         statMap[selectedElement.index]->min = guiRange->getValueLow();
         statMap[selectedElement.index]->max = guiRange->getValueHigh();
-        newEntryString = getStatsInfo(selectedElement.index).name+" => "+selectedAudioUnit->getName()+":"+guiSelectedParameter->getTextString();
     }
     
     ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
-    buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectedAudioUnit, selectedElement, guiSelectedParameter->getTextString());
+    buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode, selectedTrack, selectedDevice, selectedElement, guiSelectedParameter->getTextString());
     guiDelete->setVisible(true);
     guiMapper->autoSizeToFitWidgets();
     guiView->autoSizeToFitWidgets();
     selectedParameterToggle->setColorBack(ofColor(190, 5, 5));
 }
 
-void MantaAudioUnitControllerUI::removeSelectedMapping()
+void MantaAbletonControllerUI::removeSelectedMapping()
 {
     if (selectedElement.type == NONE) {
         return;
@@ -534,16 +761,15 @@ void MantaAudioUnitControllerUI::removeSelectedMapping()
     selectedParameterToggle->setColorBack(OFX_UI_COLOR_BACK);
 }
 
-MantaAudioUnitControllerUI::~MantaAudioUnitControllerUI()
+MantaAbletonControllerUI::~MantaAbletonControllerUI()
 {
-    ofRemoveListener(eventPadClick, this, &MantaAudioUnitControllerUI::eventMantaPadClick);
-    ofRemoveListener(eventSliderClick, this, &MantaAudioUnitControllerUI::eventMantaSliderClick);
-    ofRemoveListener(eventButtonClick, this, &MantaAudioUnitControllerUI::eventMantaButtonClick);
-    ofRemoveListener(eventStatClick, this, &MantaAudioUnitControllerUI::eventMantaStatClick);
+    ofRemoveListener(eventPadClick, this, &MantaAbletonControllerUI::eventMantaPadClick);
+    ofRemoveListener(eventSliderClick, this, &MantaAbletonControllerUI::eventMantaSliderClick);
+    ofRemoveListener(eventButtonClick, this, &MantaAbletonControllerUI::eventMantaButtonClick);
+    ofRemoveListener(eventStatClick, this, &MantaAbletonControllerUI::eventMantaStatClick);
     
     parameterLU.clear();
-    synthLU.clear();
-    groupSynthLU.clear();
+    groupDeviceLU.clear();
     buttonMappingLU.clear();
     
     vector<ofxUICanvas*>::iterator itg = guiParameterGroups.begin();

@@ -88,7 +88,7 @@ public:
     
 protected:
     
-    void update();
+    virtual void update();
     void compareStats(int index, ofParameter<float> *statRef, float newStatValue);
     void setStatsColor(int index, ofColor color) {statsInfo[index].color = color;}
     

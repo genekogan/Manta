@@ -8,30 +8,32 @@ MantaAudioUnitController::MantaParameterMapping::MantaParameterMapping(AudioUnit
     this->max = parameter.getMax();
     this->toggle = toggle;
     if (!toggle) {
-        parameter = min;
+        parameter = max;
+        toggleHighLow();
     }
 }
 
 MantaAudioUnitController::MantaAudioUnitController() : MantaStats()
 {
     toSetMidiLedColor = true;
-    setupTheory();
+    
     addPadListener(this, &MantaAudioUnitController::PadEvent);
     addSliderListener(this, &MantaAudioUnitController::SliderEvent);
-    addPadListener(this, &MantaAudioUnitController::ButtonEvent);
+    addButtonListener(this, &MantaAudioUnitController::ButtonEvent);
     addPadVelocityListener(this, &MantaAudioUnitController::PadVelocityEvent);
     addButtonVelocityListener(this, &MantaAudioUnitController::ButtonVelocityEvent);
     addStatListener(this, &MantaAudioUnitController::StatEvent);
     
-    setKey(0);
-    setMode(0);
-    setOctave(5);
-
     setPadFreezingEnabled(false);
     for (int i = 0; i < 48; i++) {
         padFrozen[i] = false;
         padReleased[i] = false;
     }
+    
+    setupTheory();
+    setKey(0);
+    setMode(0);
+    setOctave(5);
 }
 
 void MantaAudioUnitController::registerAudioUnit(AudioUnitInstrument & synth)
@@ -252,16 +254,8 @@ void MantaAudioUnitController::freezePads()
 void MantaAudioUnitController::setPadFreezingEnabled(bool toFreezePads)
 {
     this->toFreezePads = toFreezePads;
-    if (toFreezePads)
-    {
-        setButtonLedState(1, Manta::Red);
-        setButtonColor(1, ofColor(0, 0, 255));
-    }
-    else
-    {
-        setButtonLedState(1, Manta::Off);
-        setButtonColor(1, ofColor::white);
-    }
+    setButtonLedState(1, toFreezePads ? Manta::Red : Manta::Off);
+    setButtonColor(1, toFreezePads ? ofColor::blue : ofColor::white);
 }
 
 void MantaAudioUnitController::PadEvent(ofxMantaEvent & evt)
@@ -586,8 +580,8 @@ void MantaAudioUnitController::loadPreset(string name)
 MantaAudioUnitController::~MantaAudioUnitController()
 {
     removePadListener(this, &MantaAudioUnitController::PadEvent);
-    removeButtonListener(this, &MantaAudioUnitController::SliderEvent);
-    removePadListener(this, &MantaAudioUnitController::ButtonEvent);
+    removeSliderListener(this, &MantaAudioUnitController::SliderEvent);
+    removeButtonListener(this, &MantaAudioUnitController::ButtonEvent);
     removePadVelocityListener(this, &MantaAudioUnitController::PadVelocityEvent);
     removeButtonVelocityListener(this, &MantaAudioUnitController::ButtonVelocityEvent);
     removeStatListener(this, &MantaAudioUnitController::StatEvent);

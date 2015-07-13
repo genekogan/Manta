@@ -63,7 +63,6 @@ protected:
     void SliderEvent(ofxMantaEvent & evt);
     void ButtonEvent(ofxMantaEvent & evt);
     void StatEvent(MantaStatsArgs & evt);    
-    
     void PadVelocityEvent(ofxMantaEvent & evt);
     void ButtonVelocityEvent(ofxMantaEvent & evt);
 

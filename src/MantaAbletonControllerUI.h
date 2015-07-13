@@ -2,13 +2,14 @@
 
 #include "ofMain.h"
 #include "ofxUI.h"
-#include "AudioUnitInstrument.h"
-#include "MantaAudioUnitController.h"
+#include "MantaAbletonController.h"
 
-class MantaAudioUnitControllerUI : public MantaAudioUnitController
+
+class MantaAbletonControllerUI : public MantaAbletonController
 {
 public:
-    ~MantaAudioUnitControllerUI();
+    MantaAbletonControllerUI();
+    ~MantaAbletonControllerUI();
     void setupUI();
 
 private:
@@ -24,16 +25,22 @@ private:
     
     struct MantaParameterPairSelection
     {
-        AudioUnitInstrument *selectedAudioUnit;
+        int selectMode;
+        int selectedTrack;
+        ofxAbletonLiveDevice *selectedDevice;
         SelectedMantaElement mantaElement;
         string parameterName;
-        MantaParameterPairSelection(AudioUnitInstrument *selectedAudioUnit, SelectedMantaElement mantaElement, string parameterName)
+        MantaParameterPairSelection(int selectMode, int selectedTrack, ofxAbletonLiveDevice *selectedDevice, SelectedMantaElement mantaElement, string parameterName)
         {
-            this->selectedAudioUnit = selectedAudioUnit;
+            this->selectMode = selectMode;
+            this->selectedTrack = selectedTrack;
+            this->selectedDevice = selectedDevice;
             this->mantaElement = mantaElement;
             this->parameterName = parameterName;
         }
     };
+    
+    void abletonLoaded();
     
     void eventMantaPadClick(int & e);
     void eventMantaSliderClick(int & e);
@@ -45,6 +52,8 @@ private:
     void removeSelectedMapping();
     
     void guiSelectEvent(ofxUIEventArgs &e);
+    void guiSelectTrackEvent(ofxUIEventArgs &e);
+    void guiSelectGlobalEvent(ofxUIEventArgs &e);
     void guiMidiEvent(ofxUIEventArgs &e);
     void guiMapEvent(ofxUIEventArgs &e);
     void guiViewEvent(ofxUIEventArgs &e);
@@ -58,13 +67,17 @@ private:
     ofxUIRangeSlider *guiRange;
     ofxUILabelToggle *guiToggle;
     ofxUIButton *guiDelete;
+    ofxUIIntSlider *guiMidiChannel;
+    ofxUILabelButton *guiMidiMap;
     
-    map<pair<AudioUnitInstrument*, string>, AudioUnitParameterInfo> parameterLU;
-    map<ofxUIButton*, AudioUnitInstrument*> synthLU;
-    map<ofxUICanvas*, AudioUnitInstrument*> groupSynthLU;
+    map<pair<ofxAbletonLiveDevice*, string>, ofxAbletonLiveParameter*> parameterLU;
+    map<ofxUICanvas*, ofxAbletonLiveDevice*> groupDeviceLU;
+    map<ofxUICanvas*, int> groupTrackLU;
     map<ofxUIButton*, MantaParameterPairSelection*> buttonMappingLU;
     
     SelectedMantaElement selectedElement;
-    AudioUnitInstrument *selectedAudioUnit;
+    ofxAbletonLiveDevice *selectedDevice;
+    int selectedTrack;
+    int selectMode;
     ofxUIToggle *selectedParameterToggle, *selectedViewMappingToggle;
 };

@@ -1,6 +1,19 @@
 #include "MantaAudioUnitControllerUI.h"
 
 
+MantaAudioUnitControllerUI::MantaAudioUnitControllerUI()
+{
+    guiGroups = new ofxUITabBar();
+    guiMidi = new ofxUICanvas("Options");
+    guiMapper = new ofxUICanvas("Map parameter");
+    guiView = new ofxUICanvas("View");
+    guiPresets = new ofxUICanvas("Presets");
+    
+    guiGroups->setPosition(410, 5);
+    guiMidi->setPosition(800, 175);
+    guiMapper->setPosition(800, 5);
+}
+
 void MantaAudioUnitControllerUI::setupUI()
 {
     ofAddListener(eventPadClick, this, &MantaAudioUnitControllerUI::eventMantaPadClick);
@@ -10,8 +23,16 @@ void MantaAudioUnitControllerUI::setupUI()
     
     selectedElement.type = NONE;
     
-    guiGroups = new ofxUITabBar();
-    guiGroups->setPosition(410, 5);
+    guiGroups->clearWidgets();
+    guiGroups->removeWidgets();
+    guiMidi->clearWidgets();
+    guiMidi->removeWidgets();
+    guiView->clearWidgets();
+    guiView->removeWidgets();
+    guiPresets->clearWidgets();
+    guiPresets->removeWidgets();
+    guiMapper->clearWidgets();
+    guiMapper->removeWidgets();
     
     map<string, AudioUnitInstrument*>::iterator its = synths.begin();
     for (; its != synths.end(); ++its)
@@ -50,9 +71,6 @@ void MantaAudioUnitControllerUI::setupUI()
     }
     
     // Midi selection gui
-    guiMidi = new ofxUICanvas();
-    guiMidi->setPosition(800, 175);
-    guiMidi->setName("Options");
     guiMidi->addLabel("Options");
     guiMidi->addSpacer();
     its = synths.begin();
@@ -63,7 +81,7 @@ void MantaAudioUnitControllerUI::setupUI()
     for (; its != synths.end(); ++its) {
         guiMidi->addLabelButton("view "+its->second->getName(), false);
     }
-    guiMidi->addToggle("Pad freeze enabled", false);
+    guiMidi->addToggle("Pad freeze enabled", &toFreezePads);
     guiMidi->addSpacer();
     
     guiMidi->addLabel("Midi selection");
@@ -96,7 +114,6 @@ void MantaAudioUnitControllerUI::setupUI()
     resetKeyString();
     
     // Mapping summary gui
-    guiView = new ofxUICanvas();
     guiView->setName("Summary");
     guiView->addLabel("Summary");
     guiView->addSpacer();
@@ -104,7 +121,6 @@ void MantaAudioUnitControllerUI::setupUI()
     ofAddListener(guiView->newGUIEvent, this, &MantaAudioUnitControllerUI::guiViewEvent);
     
     // Presets gui
-    guiPresets = new ofxUICanvas();
     guiPresets->setName("Presets");
     guiPresets->addLabel("Presets");
     guiPresets->addSpacer();
@@ -130,8 +146,6 @@ void MantaAudioUnitControllerUI::setupUI()
     guiGroups->addCanvas(guiPresets);
     
     // Parameter mapping gui
-    guiMapper = new ofxUICanvas("Map parameter");
-    guiMapper->setPosition(800, 5);
     guiMantaElement = guiMapper->addTextArea("Manta", "manta_element");
     guiSelectedParameter = guiMapper->addTextArea("Parameter", "my_param");
     guiMapper->addLabelButton("Map", false);
@@ -196,7 +210,7 @@ void MantaAudioUnitControllerUI::guiMidiEvent(ofxUIEventArgs &e)
         setOctave(((ofxUIIntSlider *) guiMidi->getWidget("Octave"))->getValue());
     }
     else if (e.getName() == "Pad freeze enabled") {
-        setPadFreezingEnabled(e.getToggle()->getValue());
+        setPadFreezingEnabled(toFreezePads);
     }
     else
     {

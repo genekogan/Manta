@@ -1,31 +1,32 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxAudioUnit.h"
-#include "AudioUnitInstrument.h"
+#include "ofxMidi.h"
+#include "ofxAbletonLive.h"
 #include "MantaStats.h"
 
 
-class MantaAudioUnitController : public MantaStats
+class MantaAbletonController : public MantaStats
 {
 public:
-    MantaAudioUnitController();
-    virtual ~MantaAudioUnitController();
+    MantaAbletonController();
+    virtual ~MantaAbletonController();
 
-    void registerAudioUnit(AudioUnitInstrument & synth);
-
-    void mapPadToParameter(int row, int column, AudioUnitInstrument & synth, string parameterName, bool toggle=false);
-    void mapSliderToParameter(int index, AudioUnitInstrument & synth, string parameterName);
-    void mapButtonToParameter(int index, AudioUnitInstrument & synth, string parameterName, bool toggle=false);
-    void mapStatToParameter(int index, AudioUnitInstrument & synth, string parameterName);
+    void setup(ofxAbletonLive & live);
+    void update();
+    
+    void mapPadToParameter(int row, int column, int track, string deviceName, ofParameter<float> & parameter, bool toggle=false);
+    void mapSliderToParameter(int index, int track, string deviceName, ofParameter<float> & parameter);
+    void mapButtonToParameter(int index, int track, string deviceName, ofParameter<float> & parameter, bool toggle=false);
+    void mapStatToParameter(int index, int track, string deviceName, ofParameter<float> & parameter);
 
     void removePadMapping(int row, int column);
     void removeSliderMapping(int index);
     void removeButtonMapping(int index);
     void removeStatMapping(int index);
 
-    void mapSelectionToMidiNotes(AudioUnitInstrument & synth);
-    void mapAllPadsToMidiNotes(AudioUnitInstrument & synth);
+    void mapSelectionToMidiNotes(int channel);
+    void mapAllPadsToMidiNotes(int channel);
     void clearMidiMapping();
     
     void setKey(int key);
@@ -45,19 +46,20 @@ protected:
     {
         float min, max;
         bool toggle;
+        int track;
+        string deviceName;
         ofParameter<float> parameter;
-        string synthName;
-        MantaParameterMapping(AudioUnitInstrument & synth, string parameterName, bool toggle=false);
+        MantaParameterMapping(ofParameter<float> & parameter_, int track, string deviceName, bool toggle=false);
         void toggleHighLow() {parameter.set(parameter == min ? max : min);}
     };
 
     struct AudioUnitNotePair
     {
-        AudioUnitInstrument *synth;
+        int channel;
         int note;
-        void noteOn(int velocity) {synth->getSynth().midiNoteOn(note, velocity);}
-        void noteOff(int velocity) {synth->getSynth().midiNoteOff(note, velocity);}
     };
+    
+    virtual void abletonLoaded() { }
     
     void PadEvent(ofxMantaEvent & evt);
     void SliderEvent(ofxMantaEvent & evt);
@@ -67,7 +69,7 @@ protected:
     void ButtonVelocityEvent(ofxMantaEvent & evt);
 
     void resetMidiMapping();
-    void setMidiMapping(int idx, AudioUnitInstrument *synth);
+    void setMidiMapping(int idx, int channel);
 
     void updatePadColor(int row, int column);
     void updateButtonColor(int index);
@@ -79,7 +81,8 @@ protected:
     void getChord(int chord[], int root, int octave=0);
     int getNoteAtScaleDegree(int root, int degree, int mode, int octave);
     
-    map<string, AudioUnitInstrument*> synths;
+    ofxMidiOut midi;
+    ofxAbletonLive *live;
     map<int, MantaParameterMapping*> padMap;
     map<int, MantaParameterMapping*> sliderMap;
     map<int, MantaParameterMapping*> buttonMap;

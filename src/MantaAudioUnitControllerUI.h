@@ -8,6 +8,7 @@
 class MantaAudioUnitControllerUI : public MantaAudioUnitController
 {
 public:
+    MantaAudioUnitControllerUI();
     ~MantaAudioUnitControllerUI();
     void setupUI();
 

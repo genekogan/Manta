@@ -1,0 +1,53 @@
+<MantaAbletonController>
+	<Ableton>
+		<ALS>/Users/gene/Desktop/ABLETON_FILES/vocode1 Project/vocode2.als</ALS>
+	</Ableton>
+	<Manta>
+		<Key>0</Key>
+		<Mode>0</Mode>
+		<Octave>5</Octave>
+		<FreezeEnabled>0</FreezeEnabled>
+		<Pads>
+			<PadMapping>
+				<Id>0</Id>
+				<TrackIndex>-1</TrackIndex>
+				<DeviceName>Global</DeviceName>
+				<ParameterName>Global tempo</ParameterName>
+				<Min>234.369</Min>
+				<Max>999</Max>
+				<Toggle>0</Toggle>
+			</PadMapping>
+			<PadMapping>
+				<Id>1</Id>
+				<TrackIndex>-1</TrackIndex>
+				<DeviceName>Global</DeviceName>
+				<ParameterName>Global volume</ParameterName>
+				<Min>0</Min>
+				<Max>0.546798</Max>
+				<Toggle>0</Toggle>
+			</PadMapping>
+		</Pads>
+		<Sliders>
+			<SliderMapping>
+				<Id>0</Id>
+				<TrackIndex>0</TrackIndex>
+				<DeviceName>Track 0</DeviceName>
+				<ParameterName>T0 volume</ParameterName>
+				<Min>0.251232</Min>
+				<Max>0.748768</Max>
+			</SliderMapping>
+		</Sliders>
+		<Buttons/>
+		<Stats>
+			<StatMapping>
+				<Id>4</Id>
+				<TrackIndex>0</TrackIndex>
+				<DeviceName>Reverb</DeviceName>
+				<ParameterName>PreDelay</ParameterName>
+				<Min>0</Min>
+				<Max>0.901478</Max>
+			</StatMapping>
+		</Stats>
+		<MidiMap/>
+	</Manta>
+</MantaAbletonController>

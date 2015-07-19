@@ -129,13 +129,18 @@ void MantaAudioUnitController::mapAllPadsToMidiNotes(AudioUnitInstrument & synth
 
 void MantaAudioUnitController::clearMidiMapping()
 {
-    midiMap.clear();
-    markAllPads(Manta::Off);
-    for (int r = 0; r < 6; r++) {
-        for (int c = 0; c < 8; c++) {
-            setPadColor(r, c, ofColor::white);
+    for (int r = 0; r < 6; r++)
+    {
+        for (int c = 0; c < 8; c++)
+        {
+            if (midiMap.count(r * 8 + c) > 0)
+            {
+                setPadColor(r, c, ofColor::white);
+                setPadLedState(r, c, Manta::Off);
+            }
         }
     }
+    midiMap.clear();
 }
 
 void MantaAudioUnitController::resetMidiMapping()
@@ -575,6 +580,8 @@ void MantaAudioUnitController::loadPreset(string name)
     }
     
     xml.setToParent();
+    
+    redraw();
 }
 
 MantaAudioUnitController::~MantaAudioUnitController()

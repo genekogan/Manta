@@ -12,11 +12,44 @@ MantaAbletonControllerUI::MantaAbletonControllerUI()
     guiGroups->setPosition(410, 5);
     guiMidi->setPosition(800, 175);
     guiMapper->setPosition(800, 5);
+    
+    guiGroups->setVisible(false);
+    guiMidi->setVisible(false);
+    guiMapper->setVisible(false);
+    guiView->setVisible(false);
+    
+    guiPresets->setPosition(410, 5);
+    setupUIPresets();
 }
 
 void MantaAbletonControllerUI::abletonLoaded()
 {
     setupUI();
+}
+
+void MantaAbletonControllerUI::setupUIPresets()
+{
+    guiPresets->clearWidgets();
+    guiPresets->removeWidgets();
+    guiPresets->setName("Presets");
+    guiPresets->addLabel("Presets");
+    guiPresets->addSpacer();
+    guiPresets->addButton("Save preset", false);
+    guiPresets->addSpacer();
+    
+    vector<string> presets;
+    ofDirectory dir(ofToDataPath("presets/"));
+    dir.allowExt("xml");
+    dir.listDir();
+    for(int i = 0; i < dir.numFiles(); i++) {
+        string presetName = dir.getName(i);
+        presets.push_back(presetName.substr(0, presetName.length()-4));
+    }
+    ofxUIDropDownList *dd = guiPresets->addDropDownList("Load Preset", presets);
+    dd->open();
+    dd->setAutoClose(false);
+    guiPresets->autoSizeToFitWidgets();
+    ofAddListener(guiPresets->newGUIEvent, this, &MantaAbletonControllerUI::guiPresetsEvent);
 }
 
 void MantaAbletonControllerUI::setupUI()
@@ -28,14 +61,26 @@ void MantaAbletonControllerUI::setupUI()
     
     selectedElement.type = NONE;
 
+    guiGroups->setVisible(true);
+    guiMidi->setVisible(true);
+    guiMapper->setVisible(true);
+    guiView->setVisible(true);
+    
+    groupDeviceLU.clear();
+    groupTrackLU.clear();
+
+    for (int i=0; i<innerGuis.size(); i++)
+    {
+        innerGuis[i]->clearWidgets();
+        innerGuis[i]->removeWidgets();
+    }
+    innerGuis.clear();
     guiGroups->clearWidgets();
     guiGroups->removeWidgets();
     guiMidi->clearWidgets();
     guiMidi->removeWidgets();
     guiView->clearWidgets();
     guiView->removeWidgets();
-    guiPresets->clearWidgets();
-    guiPresets->removeWidgets();
     guiMapper->clearWidgets();
     guiMapper->removeWidgets();
     
@@ -55,6 +100,7 @@ void MantaAbletonControllerUI::setupUI()
     ddg->setAutoClose(false);
     guiGlobal->autoSizeToFitWidgets();
     ofAddListener(guiGlobal->newGUIEvent, this, &MantaAbletonControllerUI::guiSelectGlobalEvent);
+    guiGroups->addLabel("Global");
     guiGroups->addCanvas(guiGlobal);
     
     // Track parameters
@@ -77,6 +123,8 @@ void MantaAbletonControllerUI::setupUI()
         gui->autoSizeToFitWidgets();
         ofAddListener(gui->newGUIEvent, this, &MantaAbletonControllerUI::guiSelectTrackEvent);
         guiGroups->addCanvas(gui);
+        innerGuis.push_back(gui);
+        
         groupTrackLU[gui] = it->first;
     }
     guiGroups->addSpacer();
@@ -113,10 +161,12 @@ void MantaAbletonControllerUI::setupUI()
             
             guiParameterGroups.push_back(gui);
             guiGroups->addCanvas(gui);
+            innerGuis.push_back(gui);
             groupDeviceLU[gui] = itd->second;
             groupTrackLU[gui] = it->first;
             ofAddListener(gui->newGUIEvent, this, &MantaAbletonControllerUI::guiSelectEvent);
         }
+    
         guiGroups->addSpacer();
     }
     
@@ -161,30 +211,13 @@ void MantaAbletonControllerUI::setupUI()
     ofAddListener(guiView->newGUIEvent, this, &MantaAbletonControllerUI::guiViewEvent);
     
     // Presets gui
-    guiPresets->setName("Presets");
-    guiPresets->addLabel("Presets");
-    guiPresets->addSpacer();
-    guiPresets->addButton("Save preset", false);
-    guiPresets->addSpacer();
-    
-    vector<string> presets;
-    ofDirectory dir(ofToDataPath("presets/"));
-    dir.allowExt("xml");
-    dir.listDir();
-    for(int i = 0; i < dir.numFiles(); i++) {
-        string presetName = dir.getName(i);
-        presets.push_back(presetName.substr(0, presetName.length()-4));
-    }
-    ofxUIDropDownList *dd = guiPresets->addDropDownList("Load Preset", presets);
-    dd->open();
-    dd->setAutoClose(false);
-    guiPresets->autoSizeToFitWidgets();
-    ofAddListener(guiPresets->newGUIEvent, this, &MantaAbletonControllerUI::guiPresetsEvent);
-    
+    setupUIPresets();
     guiGroups->addLabel("View");
     guiGroups->addCanvas(guiView);
     guiGroups->addCanvas(guiPresets);
-    
+    innerGuis.push_back(guiView);
+    innerGuis.push_back(guiPresets);
+
     // Parameter mapping gui
     guiMantaElement = guiMapper->addTextArea("Manta", "manta_element");
     guiSelectedParameter = guiMapper->addTextArea("Parameter", "my_param");
@@ -288,43 +321,33 @@ void MantaAbletonControllerUI::guiMapEvent(ofxUIEventArgs &e)
         map<int, MantaParameterMapping*>::iterator its = sliderMap.begin();
         map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
         map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
-        
-        for (; itp != padMap.end(); ++itp) {
-            if ((selectMode == 2 && itp->second->deviceName == selectedDevice->getName()) ||
-                (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(itp->second->track)+" "+itp->second->parameter.getName()) ||
-                (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+itp->second->parameter.getName())) {
-                itp->second->min = low;
-                itp->second->max = high;
-                itp->second->toggle = toggle;
-                return;
+
+        if (selectedElement.type == PAD && padMap.count(selectedElement.index)) {
+            if ((selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+padMap[selectedElement.index]->parameter.getName()) ||
+                (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" "+padMap[selectedElement.index]->parameter.getName()) ||
+                (selectMode == 2 && guiSelectedParameter->getTextString() == padMap[selectedElement.index]->parameter.getName())) {
+                padMap[selectedElement.index]->setRange(low, high, toggle);
             }
         }
-        for (; its != sliderMap.end(); ++its) {
-            if ((selectMode == 2 && its->second->deviceName == selectedDevice->getName()) ||
-                (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(its->second->track)+" "+its->second->parameter.getName()) ||
-                (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+its->second->parameter.getName())) {
-                its->second->min = low;
-                its->second->max = high;
-                return;
+        else if (selectedElement.type == SLIDER && sliderMap.count(selectedElement.index)) {
+            if ((selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+sliderMap[selectedElement.index]->parameter.getName()) ||
+                (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" "+sliderMap[selectedElement.index]->parameter.getName()) ||
+                (selectMode == 2 && guiSelectedParameter->getTextString() == sliderMap[selectedElement.index]->parameter.getName())) {
+                sliderMap[selectedElement.index]->setRange(low, high, toggle);
             }
         }
-        for (; itb != buttonMap.end(); ++itb) {
-            if ((selectMode == 2 && itb->second->deviceName == selectedDevice->getName()) ||
-                (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(itb->second->track)+" "+itb->second->parameter.getName()) ||
-                (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+itb->second->parameter.getName())) {
-                itb->second->min = low;
-                itb->second->max = high;
-                itb->second->toggle = toggle;
-                return;
+        else if (selectedElement.type == BUTTON && buttonMap.count(selectedElement.index)) {
+            if ((selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+buttonMap[selectedElement.index]->parameter.getName()) ||
+                (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" "+buttonMap[selectedElement.index]->parameter.getName()) ||
+                (selectMode == 2 && guiSelectedParameter->getTextString() == buttonMap[selectedElement.index]->parameter.getName())) {
+                buttonMap[selectedElement.index]->setRange(low, high, toggle);
             }
         }
-        for (; itsm != statMap.end(); ++itsm) {
-            if ((selectMode == 2 && itsm->second->deviceName == selectedDevice->getName()) ||
-                (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(itsm->second->track)+" "+itsm->second->parameter.getName()) ||
-                (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+itsm->second->parameter.getName())) {
-                itsm->second->min = low;
-                itsm->second->max = high;
-                return;
+        else if (selectedElement.type == STAT && statMap.count(selectedElement.index)) {
+            if ((selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+statMap[selectedElement.index]->parameter.getName()) ||
+                (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" "+statMap[selectedElement.index]->parameter.getName()) ||
+                (selectMode == 2 && guiSelectedParameter->getTextString() == statMap[selectedElement.index]->parameter.getName())) {
+                statMap[selectedElement.index]->setRange(low, high, toggle);
             }
         }
     }
@@ -365,7 +388,18 @@ void MantaAbletonControllerUI::guiViewEvent(ofxUIEventArgs &e)
     selectedDevice = buttonMappingLU[e.getButton()]->selectedDevice;
     selectedTrack = buttonMappingLU[e.getButton()]->selectedTrack;
     selectedElement = buttonMappingLU[e.getButton()]->mantaElement;
-    guiSelectedParameter->setTextString(buttonMappingLU[e.getButton()]->parameterName);
+
+    if (selectMode == 0) {
+        guiSelectedParameter->setTextString("Global "+buttonMappingLU[e.getButton()]->parameterName);
+    }
+    else if (selectMode == 1) {
+        guiSelectedParameter->setTextString("T"+ofToString(selectedTrack)+" "+buttonMappingLU[e.getButton()]->parameterName);
+    }
+    else if (selectMode == 2) {
+        guiSelectedParameter->setTextString(buttonMappingLU[e.getButton()]->parameterName);
+    }
+    
+    
     
     if      (selectedElement.type == NONE) {
         guiMantaElement->setTextString("*** none selected ***");
@@ -422,73 +456,142 @@ void MantaAbletonControllerUI::guiPresetsEvent(ofxUIEventArgs &e)
     {
         if (e.getButton()->getValue())  return;
         string presetName = ofSystemTextBoxDialog("Preset name");
-        savePreset(presetName);
-        ((ofxUIDropDownList *) guiPresets->getWidget("Load Preset"))->addToggle(presetName);
-        guiPresets->autoSizeToFitWidgets();
+        ofFileDialogResult alsFileResult = ofSystemLoadDialog("Find Ableton ALS file");
+        if (presetName != "" && alsFileResult.bSuccess)
+        {
+            savePreset(presetName, alsFileResult.filePath);
+            ((ofxUIDropDownList *) guiPresets->getWidget("Load Preset"))->addToggle(presetName);
+            guiPresets->autoSizeToFitWidgets();
+        }
     }
     else if (e.getParentName() == "Load Preset")
     {
         loadPreset(e.getName());
-        
-        // system dialog -> press OK to do the rest
-        // 1) scanLiveSet()
-        // 2) when ready, do manta mapping as below....
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        
-        
-        
-        map<int, MantaParameterMapping*>::iterator itp = padMap.begin();
-        map<int, MantaParameterMapping*>::iterator its = sliderMap.begin();
-        map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
-        map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
-        for (; itp != padMap.end(); ++itp)
-        {
-            string newEntryString = "P("+ofToString(floor(itp->first / 8))+","+ofToString(itp->first % 8)+") => "+itp->second->deviceName+":"+itp->second->parameter.getName();
-            ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
-            selectedDevice = live->getTrack(itp->second->track)->getDevice(itp->second->deviceName);
-            selectedElement.index = itp->first;
-            selectedElement.type = PAD;
-            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode, selectedTrack, selectedDevice, selectedElement, itp->second->parameter.getName());
+    }
+}
+
+void MantaAbletonControllerUI::loadPresetData()
+{
+    MantaAbletonController::loadPresetData();
+    setupUI();
+
+    map<int, MantaParameterMapping*>::iterator itp = padMap.begin();
+    map<int, MantaParameterMapping*>::iterator its = sliderMap.begin();
+    map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
+    map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
+    for (; itp != padMap.end(); ++itp)
+    {
+        string newEntryString;
+        int selectMode_, selectTrack_;
+        selectTrack_ = itp->second->track;
+        ofxAbletonLiveDevice *selectedDevice_ = NULL;
+        if (selectTrack_ == -1) {
+            selectMode_ = 0;
+            selectedDevice_ = NULL;
+            newEntryString = "P("+ofToString(floor(itp->first / 8))+","+ofToString(itp->first % 8)+") => Global "+itp->second->parameter.getName();
         }
-        for (; its != sliderMap.end(); ++its)
-        {
-            string newEntryString = "S("+ofToString(its->first)+") => "+its->second->deviceName+":"+its->second->parameter.getName();
-            ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
-            selectedDevice = live->getTrack(itp->second->track)->getDevice(itp->second->deviceName);
-            selectedElement.index = its->first;
-            selectedElement.type = SLIDER;
-            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode, selectedTrack, selectedDevice, selectedElement, its->second->parameter.getName());
+        else if (itp->second->deviceName == "Track "+ofToString(selectTrack_)) {
+            selectMode_ = 1;
+            selectedDevice_ = NULL;
+            newEntryString = "P("+ofToString(floor(itp->first / 8))+","+ofToString(itp->first % 8)+") => T"+ofToString(selectTrack_)+" "+itp->second->parameter.getName();
         }
-        for (; itb != buttonMap.end(); ++itb)
-        {
-            string newEntryString = "B("+ofToString(itb->first)+") => "+itb->second->deviceName+":"+itb->second->parameter.getName();
-            ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
-            selectedDevice = live->getTrack(itp->second->track)->getDevice(itp->second->deviceName);
-            selectedElement.index = itb->first;
-            selectedElement.type = BUTTON;
-            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode, selectedTrack, selectedDevice, selectedElement, itb->second->parameter.getName());
+        else {
+            selectMode_ = 2;
+            selectedDevice_ = live->getTrack(selectTrack_)->getDevice(itp->second->deviceName);
+            newEntryString = "P("+ofToString(floor(itp->first / 8))+","+ofToString(itp->first % 8)+") => "+itp->second->deviceName+":"+itp->second->parameter.getName();
         }
-        for (; itsm != statMap.end(); ++itsm)
-        {
-            string newEntryString = getStatsInfo(selectedElement.index).name+" => "+itsm->second->deviceName+":"+itsm->second->parameter.getName();
-            ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
-            selectedDevice = live->getTrack(itp->second->track)->getDevice(itp->second->deviceName);
-            selectedElement.index = itsm->first;
-            selectedElement.type = STAT;
-            buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode, selectedTrack, selectedDevice, selectedElement, itsm->second->parameter.getName());
-        }
-        ((ofxUIIntSlider *) guiMidi->getWidget("Key"))->setValue(getKey());
-        ((ofxUIIntSlider *) guiMidi->getWidget("Octave"))->setValue(getOctave());
-        ((ofxUIDropDownList *) guiMidi->getWidget("Mode"))->getToggles()[getMode()]->setValue(true);
-        resetKeyString();
+        selectedElement.index = itp->first;
+        selectedElement.type = PAD;
+        ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
+        buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode_, selectTrack_, selectedDevice_, selectedElement, itp->second->parameter.getName());
         guiView->autoSizeToFitWidgets();
     }
+    for (; its != sliderMap.end(); ++its)
+    {
+        string newEntryString;
+        int selectMode_, selectTrack_;
+        selectTrack_ = its->second->track;
+        ofxAbletonLiveDevice *selectedDevice_ = NULL;
+        if (selectTrack_ == -1) {
+            selectMode_ = 0;
+            selectedDevice_ = NULL;
+            newEntryString = "S("+ofToString(its->first)+") => Global "+its->second->parameter.getName();
+        }
+        else if (its->second->deviceName == "Track "+ofToString(selectTrack_)) {
+            selectMode_ = 1;
+            selectedDevice_ = NULL;
+            newEntryString = "S("+ofToString(its->first)+") => T"+ofToString(selectTrack_)+" "+its->second->parameter.getName();
+        }
+        else {
+            selectMode_ = 2;
+            selectedDevice_ = live->getTrack(selectTrack_)->getDevice(its->second->deviceName);
+            newEntryString = "S("+ofToString(its->first)+") => "+its->second->deviceName+":"+its->second->parameter.getName();
+        }
+        selectedElement.index = its->first;
+        selectedElement.type = SLIDER;
+        ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
+        buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode_, selectTrack_, selectedDevice_, selectedElement, its->second->parameter.getName());
+        guiView->autoSizeToFitWidgets();
+    }
+    for (; itb != buttonMap.end(); ++itb)
+    {
+        string newEntryString;
+        int selectMode_, selectTrack_;
+        selectTrack_ = itb->second->track;
+        ofxAbletonLiveDevice *selectedDevice_ = NULL;
+        if (selectTrack_ == -1) {
+            selectMode_ = 0;
+            selectedDevice_ = NULL;
+            newEntryString = "B("+ofToString(itb->first)+") => Global "+itb->second->parameter.getName();
+        }
+        else if (itb->second->deviceName == "Track "+ofToString(selectTrack_)) {
+            selectMode_ = 1;
+            selectedDevice_ = NULL;
+            newEntryString = "B("+ofToString(itb->first)+") => T"+ofToString(selectTrack_)+" "+itb->second->parameter.getName();
+        }
+        else {
+            selectMode_ = 2;
+            selectedDevice_ = live->getTrack(selectTrack_)->getDevice(itb->second->deviceName);
+            newEntryString = "B("+ofToString(itb->first)+") => "+itb->second->deviceName+":"+itb->second->parameter.getName();
+        }
+        selectedElement.index = itb->first;
+        selectedElement.type = BUTTON;
+        ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
+        buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode_, selectTrack_, selectedDevice_, selectedElement, itb->second->parameter.getName());
+        guiView->autoSizeToFitWidgets();
+    }
+    for (; itsm != statMap.end(); ++itsm)
+    {
+        string newEntryString;
+        int selectMode_, selectTrack_;
+        selectTrack_ = itsm->second->track;
+        ofxAbletonLiveDevice *selectedDevice_ = NULL;
+        if (selectTrack_ == -1) {
+            selectMode_ = 0;
+            selectedDevice_ = NULL;
+            newEntryString = getStatsInfo(selectedElement.index).name+") => Global "+itsm->second->parameter.getName();
+        }
+        else if (itsm->second->deviceName == "Track "+ofToString(selectTrack_)) {
+            selectMode_ = 1;
+            selectedDevice_ = NULL;
+            newEntryString = getStatsInfo(selectedElement.index).name+") => T"+ofToString(selectTrack_)+" "+itsm->second->parameter.getName();
+        }
+        else {
+            selectMode_ = 2;
+            selectedDevice_ = live->getTrack(selectTrack_)->getDevice(itsm->second->deviceName);
+            newEntryString = getStatsInfo(selectedElement.index).name+" => "+itsm->second->deviceName+":"+itsm->second->parameter.getName();
+        }
+        selectedElement.index = itsm->first;
+        selectedElement.type = STAT;
+        ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
+        buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode_, selectTrack_, selectedDevice_, selectedElement, itsm->second->parameter.getName());
+        guiView->autoSizeToFitWidgets();
+    }
+    ((ofxUIIntSlider *) guiMidi->getWidget("Key"))->setValue(getKey());
+    ((ofxUIIntSlider *) guiMidi->getWidget("Octave"))->setValue(getOctave());
+    ((ofxUIDropDownList *) guiMidi->getWidget("Mode"))->getToggles()[getMode()]->setValue(true);
+    resetKeyString();
+    guiView->autoSizeToFitWidgets();
 }
 
 void MantaAbletonControllerUI::checkSelectedPair()
@@ -527,71 +630,64 @@ void MantaAbletonControllerUI::checkSelectedPair()
     else if (selectMode == 2)
     {
         ofxAbletonLiveParameter *p = parameterLU[make_pair(selectedDevice, guiSelectedParameter->getTextString())];
-        guiRange->setMin(p->getMin());
-        guiRange->setMax(p->getMax());
-        guiRange->setValueLow(p->getMin());
-        guiRange->setValueHigh(p->getMax());
-        guiToggle->setValue(false);
+        range.set(p->getMin(), p->getMax());
     }
-    
+
+    guiMapper->newGUIEvent.disable();
     guiRange->setMin(range.x);
     guiRange->setMax(range.y);
     guiRange->setValueLow(range.x);
     guiRange->setValueHigh(range.y);
     guiToggle->setValue(false);
     
-    map<int, MantaParameterMapping*>::iterator itp = padMap.begin();
-    map<int, MantaParameterMapping*>::iterator its = sliderMap.begin();
-    map<int, MantaParameterMapping*>::iterator itb = buttonMap.begin();
-    map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
+    if (selectedElement.type == PAD && padMap.count(selectedElement.index)) {
+        if ((selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+padMap[selectedElement.index]->parameter.getName()) ||
+            (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" "+padMap[selectedElement.index]->parameter.getName()) ||
+            (selectMode == 2 && guiSelectedParameter->getTextString() == padMap[selectedElement.index]->parameter.getName())) {
+            guiRange->setValueLow(padMap[selectedElement.index]->min);
+            guiRange->setValueHigh(padMap[selectedElement.index]->max);
+            guiToggle->setValue(padMap[selectedElement.index]->toggle);
+            guiDelete->setVisible(true);
+            guiMapper->autoSizeToFitWidgets();
+            guiMapper->newGUIEvent.enable();
 
-    for (; itp != padMap.end(); ++itp) {
-        if ((selectMode == 2 && itp->second->deviceName == selectedDevice->getName()) ||
-            (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(itp->second->track)+" "+itp->second->parameter.getName()) ||
-            (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+itp->second->parameter.getName())) {
-            guiRange->setValueLow(itp->second->min);
-            guiRange->setValueHigh(itp->second->max);
-            guiToggle->setValue(itp->second->toggle);
-            guiDelete->setVisible(true);
-            guiMapper->autoSizeToFitWidgets();
-            return;
         }
     }
-    for (; its != sliderMap.end(); ++its) {
-        if ((selectMode == 2 && its->second->deviceName == selectedDevice->getName()) ||
-            (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(its->second->track)+" "+its->second->parameter.getName()) ||
-            (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+its->second->parameter.getName())) {
-            guiRange->setValueLow(its->second->min);
-            guiRange->setValueHigh(its->second->max);
+    else if (selectedElement.type == SLIDER && sliderMap.count(selectedElement.index)) {
+        if ((selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+sliderMap[selectedElement.index]->parameter.getName()) ||
+            (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" "+sliderMap[selectedElement.index]->parameter.getName()) ||
+            (selectMode == 2 && guiSelectedParameter->getTextString() == sliderMap[selectedElement.index]->parameter.getName())) {
+            guiRange->setValueLow(sliderMap[selectedElement.index]->min);
+            guiRange->setValueHigh(sliderMap[selectedElement.index]->max);
+            guiToggle->setValue(sliderMap[selectedElement.index]->toggle);
             guiDelete->setVisible(true);
             guiMapper->autoSizeToFitWidgets();
-            return;
         }
     }
-    for (; itb != buttonMap.end(); ++itb) {
-        if ((selectMode == 2 && itb->second->deviceName == selectedDevice->getName()) ||
-            (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(itb->second->track)+" "+itb->second->parameter.getName()) ||
-            (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+itb->second->parameter.getName())) {
-            guiRange->setValueLow(itb->second->min);
-            guiRange->setValueHigh(itb->second->max);
-            guiToggle->setValue(itb->second->toggle);
+    else if (selectedElement.type == BUTTON && buttonMap.count(selectedElement.index)) {
+        if ((selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+buttonMap[selectedElement.index]->parameter.getName()) ||
+            (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" "+buttonMap[selectedElement.index]->parameter.getName()) ||
+            (selectMode == 2 && guiSelectedParameter->getTextString() == buttonMap[selectedElement.index]->parameter.getName())) {
+            guiRange->setValueLow(buttonMap[selectedElement.index]->min);
+            guiRange->setValueHigh(buttonMap[selectedElement.index]->max);
+            guiToggle->setValue(buttonMap[selectedElement.index]->toggle);
             guiDelete->setVisible(true);
             guiMapper->autoSizeToFitWidgets();
-            return;
         }
     }
-    for (; itsm != statMap.end(); ++itsm) {
-        if ((selectMode == 2 && itsm->second->deviceName == selectedDevice->getName()) ||
-            (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(itsm->second->track)+" "+itsm->second->parameter.getName()) ||
-            (selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+itsm->second->parameter.getName())) {
-            guiRange->setValueLow(itsm->second->min);
-            guiRange->setValueHigh(itsm->second->max);
+    else if (selectedElement.type == STAT && statMap.count(selectedElement.index)) {
+        if ((selectMode == 0 && guiSelectedParameter->getTextString() == "Global "+statMap[selectedElement.index]->parameter.getName()) ||
+            (selectMode == 1 && guiSelectedParameter->getTextString() == "T"+ofToString(selectedTrack)+" "+statMap[selectedElement.index]->parameter.getName()) ||
+            (selectMode == 2 && guiSelectedParameter->getTextString() == statMap[selectedElement.index]->parameter.getName())) {
+            guiRange->setValueLow(statMap[selectedElement.index]->min);
+            guiRange->setValueHigh(statMap[selectedElement.index]->max);
+            guiToggle->setValue(statMap[selectedElement.index]->toggle);
             guiDelete->setVisible(true);
             guiMapper->autoSizeToFitWidgets();
-            return;
         }
     }
-    
+
+    guiMapper->newGUIEvent.enable();
     guiDelete->setVisible(false);
     guiMapper->autoSizeToFitWidgets();
 }
@@ -652,7 +748,7 @@ void MantaAbletonControllerUI::addSelectedMapping()
         }
         else if (selectMode == 1)
         {
-            mapPadToParameter(row, col, -1, "Track "+ofToString(selectedTrack), *selectedParameter, guiToggle->getValue());
+            mapPadToParameter(row, col, selectedTrack, "Track "+ofToString(selectedTrack), *selectedParameter, guiToggle->getValue());
             newEntryString = "P("+ofToString(row)+","+ofToString(col)+") => "+guiSelectedParameter->getTextString();
         }
         else if (selectMode == 2 && selectedDevice != NULL)
@@ -673,7 +769,7 @@ void MantaAbletonControllerUI::addSelectedMapping()
         }
         else if (selectMode == 1)
         {
-            mapSliderToParameter(selectedElement.index, -1, "Track "+ofToString(selectedTrack), *selectedParameter);
+            mapSliderToParameter(selectedElement.index, selectedTrack, "Track "+ofToString(selectedTrack), *selectedParameter);
             newEntryString = "S("+ofToString(selectedElement.index)+") => "+guiSelectedParameter->getTextString();
         }
         else if (selectMode == 2 && selectedDevice != NULL)
@@ -694,7 +790,7 @@ void MantaAbletonControllerUI::addSelectedMapping()
         }
         else if (selectMode == 1)
         {
-            mapButtonToParameter(selectedElement.index, -1, "Track "+ofToString(selectedTrack), *selectedParameter, guiToggle->getValue());
+            mapButtonToParameter(selectedElement.index, selectedTrack, "Track "+ofToString(selectedTrack), *selectedParameter, guiToggle->getValue());
             newEntryString = "B("+ofToString(selectedElement.index)+") => "+guiSelectedParameter->getTextString();
         }
         else if (selectMode == 2 && selectedDevice != NULL)
@@ -729,7 +825,7 @@ void MantaAbletonControllerUI::addSelectedMapping()
     }
     
     ofxUIButton *newSummaryEntry = guiView->addButton(newEntryString, false);
-    buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode, selectedTrack, selectedDevice, selectedElement, guiSelectedParameter->getTextString());
+    buttonMappingLU[newSummaryEntry] = new MantaParameterPairSelection(selectMode, selectedTrack, selectedDevice, selectedElement, selectedParameter->getName());
     guiDelete->setVisible(true);
     guiMapper->autoSizeToFitWidgets();
     guiView->autoSizeToFitWidgets();

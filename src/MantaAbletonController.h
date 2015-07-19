@@ -37,7 +37,7 @@ public:
     int getMode() {return mode;}
     int getOctave() {return octave;}
 
-    void savePreset(string name);
+    void savePreset(string name, string alsFilePath);
     void loadPreset(string name);
     
 protected:
@@ -51,6 +51,7 @@ protected:
         ofParameter<float> parameter;
         MantaParameterMapping(ofParameter<float> & parameter_, int track, string deviceName, bool toggle=false);
         void toggleHighLow() {parameter.set(parameter == min ? max : min);}
+        void setRange(float min, float max, bool toggle=false);
     };
 
     struct AudioUnitNotePair
@@ -59,7 +60,9 @@ protected:
         int note;
     };
     
+    virtual void loadPresetData();
     virtual void abletonLoaded() { }
+    ofParameter<float> * getLiveParameter(int trackIndex, string deviceName, string parameterName);
     
     void PadEvent(ofxMantaEvent & evt);
     void SliderEvent(ofxMantaEvent & evt);
@@ -99,4 +102,5 @@ protected:
     int octave;
     
     bool toSetMidiLedColor;
+    string presetName;
 };

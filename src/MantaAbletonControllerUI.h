@@ -11,7 +11,8 @@ public:
     MantaAbletonControllerUI();
     ~MantaAbletonControllerUI();
     void setupUI();
-
+    void setupUIPresets();
+    
 private:
     
     enum SelectedMantaElementType {
@@ -40,6 +41,7 @@ private:
         }
     };
     
+    void loadPresetData();
     void abletonLoaded();
     
     void eventMantaPadClick(int & e);
@@ -69,6 +71,7 @@ private:
     ofxUIButton *guiDelete;
     ofxUIIntSlider *guiMidiChannel;
     ofxUILabelButton *guiMidiMap;
+    vector<ofxUICanvas*> innerGuis;
     
     map<pair<ofxAbletonLiveDevice*, string>, ofxAbletonLiveParameter*> parameterLU;
     map<ofxUICanvas*, ofxAbletonLiveDevice*> groupDeviceLU;

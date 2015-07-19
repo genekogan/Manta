@@ -14,6 +14,13 @@ MantaAbletonController::MantaParameterMapping::MantaParameterMapping(ofParameter
     }
 }
 
+void MantaAbletonController::MantaParameterMapping::setRange(float min, float max, bool toggle)
+{
+    this->min = min;
+    this->max = max;
+    this->toggle = toggle;
+}
+
 MantaAbletonController::MantaAbletonController() : MantaStats()
 {
     toSetMidiLedColor = true;
@@ -56,24 +63,36 @@ void MantaAbletonController::update()
 
 void MantaAbletonController::mapPadToParameter(int row, int column, int track, string deviceName, ofParameter<float> & parameter, bool toggle)
 {
+    if (padMap.count(row * 8 + column)) {
+        removePadMapping(row, column);
+    }
     padMap[row * 8 + column] = new MantaParameterMapping(parameter, track, deviceName, toggle);
     updatePadColor(row, column);
 }
 
 void MantaAbletonController::mapSliderToParameter(int index, int track, string deviceName, ofParameter<float> & parameter)
 {
+    if (sliderMap.count(index)) {
+        removeSliderMapping(index);
+    }
     sliderMap[index] = new MantaParameterMapping(parameter, track, deviceName);
     setSliderColor(index, ofColor::red);
 }
 
 void MantaAbletonController::mapButtonToParameter(int index, int track, string deviceName, ofParameter<float> & parameter, bool toggle)
 {
+    if (buttonMap.count(index)) {
+        removeButtonMapping(index);
+    }
     buttonMap[index] = new MantaParameterMapping(parameter, track, deviceName, toggle);
     updateButtonColor(index);
 }
 
 void MantaAbletonController::mapStatToParameter(int index, int track, string deviceName, ofParameter<float> & parameter)
 {
+    if (statMap.count(index)) {
+        removeStatMapping(index);
+    }
     statMap[index] = new MantaParameterMapping(parameter, track, deviceName);
     setStatsColor(index, ofColor::red);
 }
@@ -127,13 +146,18 @@ void MantaAbletonController::mapAllPadsToMidiNotes(int channel)
 
 void MantaAbletonController::clearMidiMapping()
 {
-    midiMap.clear();
-    markAllPads(Manta::Off);
-    for (int r = 0; r < 6; r++) {
-        for (int c = 0; c < 8; c++) {
-            setPadColor(r, c, ofColor::white);
+    for (int r = 0; r < 6; r++)
+    {
+        for (int c = 0; c < 8; c++)
+        {
+            if (midiMap.count(r * 8 + c) > 0)
+            {
+                setPadColor(r, c, ofColor::white);
+                setPadLedState(r, c, Manta::Off);
+            }
         }
     }
+    midiMap.clear();
 }
 
 void MantaAbletonController::resetMidiMapping()
@@ -154,7 +178,7 @@ void MantaAbletonController::setMidiMapping(int idx, int channel)
     midiMap[idx].note = getNoteAtScaleDegree(key, degree, mode, octave1);
     
     if      (channel == 1)  setPadColor(row, col, ofColor::red);
-    else if (channel == 2)  setPadColor(row, col, ofColor::green);
+    else if (channel == 2)  setPadColor(row, col, ofColor::darkGreen);
     else if (channel == 3)  setPadColor(row, col, ofColor::yellow);
     else if (channel == 4)  setPadColor(row, col, ofColor::cyan);
     else if (channel == 5)  setPadColor(row, col, ofColor::orange);
@@ -219,6 +243,7 @@ void MantaAbletonController::updatePadColor(int row, int column)
         setPadLedState(row, column, Manta::Red);
         setPadColor(row, column, synthColor);
     }
+    redraw();
 }
 
 void MantaAbletonController::updateButtonColor(int index)
@@ -372,25 +397,17 @@ int MantaAbletonController::getNoteAtScaleDegree(int root, int degree, int mode,
     }
 }
 
-void MantaAbletonController::savePreset(string name)
+void MantaAbletonController::savePreset(string name, string alsFilePath)
 {
     ofXml xml;
     xml.addChild("MantaAbletonController");
     xml.setTo("MantaAbletonController");
 
-    
-    
-    string pathToAls = "/this/is/the/path/to/ALS";
-    
     // locate correct als
     xml.addChild("Ableton");
     xml.setTo("Ableton");
-    xml.addValue("ALS", pathToAls);
+    xml.addValue("ALS", alsFilePath);
     xml.setToParent();
-    
-    
-    
-    
     
     xml.addChild("Manta");
     xml.setTo("Manta");
@@ -427,7 +444,7 @@ void MantaAbletonController::savePreset(string name)
         xml_.addChild("SliderMapping");
         xml_.setTo("SliderMapping");
         xml_.addValue("Id", its->first);
-        xml_.addValue("TrackIndex", itp->second->track);
+        xml_.addValue("TrackIndex", its->second->track);
         xml_.addValue("DeviceName", its->second->deviceName);
         xml_.addValue("ParameterName", its->second->parameter.getName());
         xml_.addValue("Min", its->second->min);
@@ -444,7 +461,7 @@ void MantaAbletonController::savePreset(string name)
         xml_.addChild("ButtonMapping");
         xml_.setTo("ButtonMapping");
         xml_.addValue("Id", itb->first);
-        xml_.addValue("TrackIndex", itp->second->track);
+        xml_.addValue("TrackIndex", itb->second->track);
         xml_.addValue("DeviceName", itb->second->deviceName);
         xml_.addValue("ParameterName", itb->second->parameter.getName());
         xml_.addValue("Min", itb->second->min);
@@ -462,7 +479,7 @@ void MantaAbletonController::savePreset(string name)
         xml_.addChild("StatMapping");
         xml_.setTo("StatMapping");
         xml_.addValue("Id", itsm->first);
-        xml_.addValue("TrackIndex", itp->second->track);
+        xml_.addValue("TrackIndex", itsm->second->track);
         xml_.addValue("DeviceName", itsm->second->deviceName);
         xml_.addValue("ParameterName", itsm->second->parameter.getName());
         xml_.addValue("Min", itsm->second->min);
@@ -497,20 +514,21 @@ void MantaAbletonController::loadPreset(string name)
     xml.setTo("MantaAbletonController");
 
     xml.setTo("Ableton");
+    string alsFile = xml.getValue("ALS");
+    xml.setTo("Ableton");
+    
+    ofSystem("open \""+alsFile+"\"");
+    ofSystemAlertDialog("Press OK when Ableton ALS file is loaded");
+    
+    presetName = name;
+    live->refresh(this, &MantaAbletonController::loadPresetData);
+}
 
-    //
-    //
-    //
-    //
-    // LOAD ALS FILE
-    //
-    //
-    //
-    
-    
-    
-    xml.setToParent();
-    
+void MantaAbletonController::loadPresetData()
+{
+    ofXml xml;
+    xml.load(ofToString("presets/"+presetName+".xml"));
+    xml.setTo("MantaAbletonController");
     xml.setTo("Manta");
     
     setKey(xml.getValue<int>("Key"));
@@ -527,8 +545,8 @@ void MantaAbletonController::loadPreset(string name)
             string deviceName = xml.getValue<string>("DeviceName");
             string parameterName = xml.getValue<string>("ParameterName");
             bool toggle = xml.getValue<int>("Toggle") == 1 ? true : false;
-            ofParameter<float> *p = live->getTrack(track)->getDevice(deviceName)->getParameter(parameterName)->getParameter();
-            mapPadToParameter(floor(id / 8), id % 8, track, deviceName, *p);
+            ofParameter<float> *p = getLiveParameter(track, deviceName, parameterName);
+            mapPadToParameter(floor(id / 8), id % 8, track, deviceName, *p, toggle);
             padMap[id]->min = xml.getValue<float>("Min");
             padMap[id]->max = xml.getValue<float>("Max");
         }
@@ -545,7 +563,7 @@ void MantaAbletonController::loadPreset(string name)
             int track = xml.getValue<int>("TrackIndex");
             string deviceName = xml.getValue<string>("DeviceName");
             string parameterName = xml.getValue<string>("ParameterName");
-            ofParameter<float> *p = live->getTrack(track)->getDevice(deviceName)->getParameter(parameterName)->getParameter();
+            ofParameter<float> *p = getLiveParameter(track, deviceName, parameterName);
             mapSliderToParameter(id, track, deviceName, *p);
             sliderMap[id]->min = xml.getValue<float>("Min");
             sliderMap[id]->max = xml.getValue<float>("Max");
@@ -564,7 +582,7 @@ void MantaAbletonController::loadPreset(string name)
             string deviceName = xml.getValue<string>("DeviceName");
             string parameterName = xml.getValue<string>("ParameterName");
             bool toggle = xml.getValue<int>("Toggle") == 1 ? true : false;
-            ofParameter<float> *p = live->getTrack(track)->getDevice(deviceName)->getParameter(parameterName)->getParameter();
+            ofParameter<float> *p = getLiveParameter(track, deviceName, parameterName);
             mapButtonToParameter(id, track, deviceName, *p);
             buttonMap[id]->min = xml.getValue<float>("Min");
             buttonMap[id]->max = xml.getValue<float>("Max");
@@ -582,7 +600,7 @@ void MantaAbletonController::loadPreset(string name)
             int track = xml.getValue<int>("TrackIndex");
             string deviceName = xml.getValue<string>("DeviceName");
             string parameterName = xml.getValue<string>("ParameterName");
-            ofParameter<float> *p = live->getTrack(track)->getDevice(deviceName)->getParameter(parameterName)->getParameter();
+            ofParameter<float> *p = getLiveParameter(track, deviceName, parameterName);
             mapStatToParameter(id, track, deviceName, *p);
             statMap[id]->min = xml.getValue<float>("Min");
             statMap[id]->max = xml.getValue<float>("Max");
@@ -604,6 +622,48 @@ void MantaAbletonController::loadPreset(string name)
     }
     
     xml.setToParent();
+    
+    redraw();
+}
+
+ofParameter<float> * MantaAbletonController::getLiveParameter(int trackIndex, string deviceName, string parameterName)
+{
+    ofParameter<float> *selectedParameter;
+    if (deviceName == "Global")
+    {
+        if (parameterName == "tempo") {
+            selectedParameter = &live->getTempo();
+        }
+        else if (parameterName == "time") {
+            selectedParameter = &live->getTime();
+        }
+        else if (parameterName == "volume") {
+            selectedParameter = &live->getVolume();
+        }
+        else if (parameterName == "pan") {
+            selectedParameter = &live->getPan();
+        }
+        else if (parameterName == "crossfade") {
+            selectedParameter = &live->getCrossFader();
+        }
+    }
+    else if (deviceName == "Track "+ofToString(trackIndex))
+    {
+        if (parameterName == "volume") {
+            selectedParameter = &live->getTrack(trackIndex)->getVolume();
+        }
+        else if (parameterName == "pan") {
+            selectedParameter = &live->getTrack(trackIndex)->getPan();
+        }
+        else if (parameterName == "send") {
+            selectedParameter = &live->getTrack(trackIndex)->getSend(0)->send;
+        }
+    }
+    else
+    {
+        selectedParameter = live->getTrack(trackIndex)->getDevice(deviceName)->getParameter(parameterName)->getParameter();
+    }
+    return selectedParameter;
 }
 
 MantaAbletonController::~MantaAbletonController()
@@ -621,19 +681,19 @@ MantaAbletonController::~MantaAbletonController()
     map<int, MantaParameterMapping*>::iterator itsm = statMap.begin();
     while (itp != padMap.end()) {
         delete itp->second;
-        padMap.erase(itp);
+        ++itp;
     }
     while (its != sliderMap.end()) {
         delete its->second;
-        sliderMap.erase(its);
+        ++its;
     }
     while (itb != buttonMap.end()) {
         delete itb->second;
-        buttonMap.erase(itb);
+        ++itb;
     }
     while (itsm != statMap.end()) {
         delete itsm->second;
-        statMap.erase(itsm);
+        ++itsm;
     }
     padMap.clear();
     sliderMap.clear();

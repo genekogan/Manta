@@ -5,6 +5,7 @@ void ofApp::setup(){
     ofSetDataPathRoot("../Resources/data/");
     ofSetEscapeQuitsApp(false);
     ofSetWindowTitle("Manta OSC");
+    ofSetFrameRate(30);
     
     manta.setup();
     
@@ -327,6 +328,7 @@ void ofApp::update(){
 
 //----------
 void ofApp::draw(){
+    cout << ofGetFrameRate() << endl;
     ofBackground(100);
 
     if (view == 0) {

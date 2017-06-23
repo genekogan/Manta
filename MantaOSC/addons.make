@@ -1,4 +1,4 @@
-ofxOsc
-ofxXmlSettings
 ofxManta
+ofxOsc
 ofxUI
+ofxXmlSettings
